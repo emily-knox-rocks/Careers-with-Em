@@ -1,0 +1,35 @@
+/* Careers with Em design tokens. Drop into any project. See BRAND-GUIDE.md. */
+:root{
+  --cwe-primary:#2c77e7;
+  --cwe-accent-text:#2569d4;
+  --cwe-accent-text-dark:#7ab3ff;
+  --cwe-ink:#101828;
+  --cwe-body:#475467;
+  --cwe-muted:#495161;
+  --cwe-subtle:#667085;
+  --cwe-tint:#f0f4f8;
+  --cwe-tint-faint:#f9fbff;
+  --cwe-primary-light:#eef5ff;
+  --cwe-primary-light-hover:#deecff;
+  --cwe-border:#e6e8eb;
+  --cwe-dark:#13181d;
+  --cwe-white:#ffffff;
+  --cwe-negative:#b42318;
+  --cwe-grad-cta:linear-gradient(to bottom,#617fe3,#3e63dd);
+  --cwe-grad-ai:linear-gradient(80.74deg,#d874fe 9.74%,#5e8dfe 93.68%);
+  --cwe-grad-ambient:linear-gradient(125deg,rgba(115,103,240,.05) 0%,rgba(78,205,196,.05) 25%,rgba(115,103,240,.08) 50%,rgba(78,205,196,.05) 75%,rgba(115,103,240,.05) 100%);
+  --cwe-font-display:"Albert Sans",sans-serif;
+  --cwe-font-body:"Inter",sans-serif;
+  --cwe-font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  --cwe-radius-chip:6px;
+  --cwe-radius-button:8px;
+  --cwe-radius-input:12px;
+  --cwe-radius-card:16px;
+  --cwe-radius-panel:24px;
+  --cwe-shadow-button:0 2px 5px rgba(0,0,0,.2),inset 0 0 0 1px rgba(0,0,0,.1),inset 0 2px rgba(255,255,255,.2);
+  --cwe-shadow-card:0 1px 2px rgba(16,24,40,.05),0 2px 8px rgba(16,24,40,.05);
+  --cwe-shadow-card-hover:0 4px 6px -1px rgba(16,24,40,.1),0 10px 24px -4px rgba(16,24,40,.1);
+  --cwe-ease:cubic-bezier(.4,0,.2,1);
+  --cwe-duration:.15s;
+  --cwe-container:64rem;
+}
