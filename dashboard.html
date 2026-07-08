@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control · Careers with Em</title>
+<meta name="description" content="Em's private life dashboard: show up daily, run the A to Z plan, track recovery, workouts, and the people met along the way.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%232c77e7%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27sans-serif%27 font-size=%2716%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3Eem%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="dashboard.css">
+<script src="plan-data.js" defer></script>
+<script src="dashboard.js" defer></script>
+</head>
+<body class="dash">
+
+<nav>
+  <div class="wrap">
+    <div>
+      <a class="wordmark" href="index.html">careers<span>with</span>em</a><span class="nav-tag">mission control</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html">Site</a>
+      <a href="challenge.html">Challenge</a>
+      <span class="streak-pill" id="streakPill" title="Consecutive days with at least one logged action"><span class="dot"></span><span class="num" id="streakNum">0</span>&nbsp;day streak</span>
+    </div>
+  </div>
+</nav>
+
+<header class="dash-hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Mission control</span>
+      <h1>Show up <span class="grad-text">today</span>, Em.</h1>
+      <p class="today-line" id="todayLine">Loading the day…</p>
+    </div>
+    <div class="checkin">
+      <div class="checkin-copy">
+        <h3 id="checkinTitle">Plant today's square</h3>
+        <p id="checkinSub">One click. Everything else you log today deepens the color.</p>
+      </div>
+      <button class="btn" id="checkinBtn" type="button">I showed up today</button>
+    </div>
+  </div>
+</header>
+
+<section class="dash-main">
+  <div class="wrap">
+
+    <!-- Headline numbers -->
+    <div class="stat-row" id="statRow">
+      <div class="stat goal-stat">
+        <span class="label">#1 goal · run Careers with Em full-time</span>
+        <span class="value" id="goalPct">0%</span>
+        <div class="bar"><i id="goalBar" style="width:0%"></i></div>
+        <p class="sub" id="goalSub">0 of 26 steps complete</p>
+      </div>
+      <div class="stat">
+        <span class="label">Active days, last year</span>
+        <span class="value" id="statActive">0</span>
+        <p class="sub">days on the board</p>
+      </div>
+      <div class="stat">
+        <span class="label">Workouts this week</span>
+        <span class="value" id="statWorkouts">0<small> / 4</small></span>
+        <p class="sub" id="statWorkoutsSub">target: 4 per week</p>
+      </div>
+      <div class="stat">
+        <span class="label">Recovery today</span>
+        <span class="value" id="statRecovery">–</span>
+        <p class="sub" id="statRecoverySub">log this morning's Whoop</p>
+      </div>
+      <div class="stat">
+        <span class="label">People remembered</span>
+        <span class="value" id="statPeople">0</span>
+        <p class="sub" id="statPeopleSub">no follow-ups due</p>
+      </div>
+    </div>
+
+    <!-- The art of showing up -->
+    <div class="heat-card" data-reveal>
+      <div class="heat-head">
+        <h2>The art of showing up every day</h2>
+        <span class="heat-count" id="heatCount"></span>
+      </div>
+      <div class="heat-scroll">
+        <div class="hm-months" id="hmMonths"></div>
+        <div class="heatmap">
+          <div class="hm-labels"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
+          <div style="display:flex;gap:3px" id="hmGrid"></div>
+        </div>
+      </div>
+      <div class="heat-foot">
+        <span>A square fills for any logged action: check-in, step, workout, Whoop, or a new connection.</span>
+        <span class="heat-legend">Less&nbsp;
+          <span class="hm-cell"></span><span class="hm-cell l1"></span><span class="hm-cell l2"></span><span class="hm-cell l3"></span><span class="hm-cell l4"></span>
+          &nbsp;More</span>
+      </div>
+    </div>
+
+    <!-- The A to Z engine -->
+    <div class="plan-grid">
+      <div class="now-card" id="nowCard"></div>
+      <div class="letters-card">
+        <h3>The A to Z plan</h3>
+        <p class="sub">One letter at a time. Finish the current step and the next one takes its place.</p>
+        <div class="letter-grid" id="letterGrid"></div>
+        <div class="phase-list" id="phaseList"></div>
+        <div class="letter-detail" id="letterDetail"></div>
+      </div>
+    </div>
+
+    <!-- Body: Whoop + workouts -->
+    <div class="log-grid">
+      <div class="log-card" id="whoopCard">
+        <div class="log-head">
+          <h3>Whoop</h3>
+          <span class="mono-note" id="whoopNote">manual log · 30 seconds</span>
+        </div>
+        <div id="whoopBody"></div>
+      </div>
+      <div class="log-card">
+        <div class="log-head">
+          <h3>Workouts</h3>
+          <span class="mono-note" id="workoutWeekNote"></span>
+        </div>
+        <div class="week-dots" id="weekDots"></div>
+        <form id="workoutForm">
+          <div class="field-row">
+            <div class="field" style="flex:1.2">
+              <label for="woType">Type</label>
+              <select id="woType">
+                <option>Strength</option><option>Run</option><option>Ride</option><option>Yoga</option><option>Walk</option><option>HIIT</option><option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="woMins">Minutes</label>
+              <input id="woMins" type="number" min="1" max="600" placeholder="45">
+            </div>
+            <div class="field" style="flex:1.6">
+              <label for="woNote">Note</label>
+              <input id="woNote" type="text" maxlength="60" placeholder="optional">
+            </div>
+          </div>
+          <div class="form-foot">
+            <button class="btn btn-sm" type="submit">Log workout</button>
+          </div>
+        </form>
+        <ul class="recent-list" id="workoutList"></ul>
+      </div>
+    </div>
+
+    <!-- Connections -->
+    <div class="people-card">
+      <div class="log-head">
+        <h3>Connections</h3>
+        <span class="mono-note">names and details, so you never blank on either</span>
+      </div>
+      <form id="personForm">
+        <div class="field-row">
+          <div class="field" style="flex:1.1">
+            <label for="pName">Name</label>
+            <input id="pName" type="text" maxlength="60" placeholder="Jordan Lee" required>
+          </div>
+          <div class="field" style="flex:1.3">
+            <label for="pMet">How we met</label>
+            <input id="pMet" type="text" maxlength="80" placeholder="AI careers meetup, July">
+          </div>
+          <div class="field" style="flex:1.2">
+            <label for="pRole">Company · role</label>
+            <input id="pRole" type="text" maxlength="80" placeholder="Recruiter at Loom">
+          </div>
+          <div class="field">
+            <label for="pFollow">Follow up on</label>
+            <input id="pFollow" type="date">
+          </div>
+        </div>
+        <div class="field-row" style="margin-top:10px">
+          <div class="field">
+            <label for="pNotes">Worth remembering</label>
+            <textarea id="pNotes" maxlength="400" placeholder="Two kids, training for a half marathon, hiring for ops in the fall. Mentioned she hates cover letters."></textarea>
+          </div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-sm" type="submit" id="personSubmit">Add person</button>
+          <button class="linklike" type="button" id="personCancel" hidden>Cancel edit</button>
+          <div class="field search-input" style="margin-left:auto">
+            <input id="personSearch" type="search" placeholder="Search people…" aria-label="Search people">
+          </div>
+        </div>
+      </form>
+      <div class="people-grid" id="peopleGrid"></div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Mission Control · data lives only in this browser</div>
+    <div class="data-controls">
+      <button class="linklike" id="exportBtn" type="button">Export backup</button>
+      <button class="linklike" id="importBtn" type="button">Import backup</button>
+      <button class="linklike" id="resetBtn" type="button">Reset all data</button>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </div>
+</footer>
+
+<div class="hm-tip" id="hmTip" role="tooltip" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status"><span id="toastMsg"></span><button id="toastAction" type="button" hidden></button></div>
+
+</body>
+</html>
