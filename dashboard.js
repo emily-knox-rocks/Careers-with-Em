@@ -680,6 +680,11 @@
     renderPeople();
   }
 
+  /* installable app: register the service worker (no-op where unsupported) */
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+
   /* re-render when a new day starts while the tab stays open */
   var renderedDay = todayISO();
   document.addEventListener('visibilitychange', function(){

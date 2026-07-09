@@ -214,3 +214,11 @@
   .letter.current{animation:none}
   .now-card.step-swap{animation:none}
 }
+
+/* Installed-app mode: respect notches and the home indicator, drop the hint */
+.install-hint b{color:var(--dark-grey)}
+nav{padding-top:env(safe-area-inset-top)}
+footer{padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+@media(display-mode:standalone){
+  .install-hint{display:none}
+}

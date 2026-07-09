@@ -2,10 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mission Control · Careers with Em</title>
 <meta name="description" content="Em's private life dashboard: show up daily, run the A to Z plan, track recovery, workouts, and the people met along the way.">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mission Control">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="brand/logos/icon-192.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%232c77e7%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27sans-serif%27 font-size=%2716%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3Eem%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="styles.css">
@@ -198,7 +204,9 @@
 
 <footer>
   <div class="wrap">
-    <div>Mission Control · data lives only in this browser</div>
+    <div>Mission Control · data lives only in this browser
+      <span class="install-hint" id="installHint">· on your phone, open the browser menu and tap <b>Add to Home Screen</b> to use this as an app</span>
+    </div>
     <div class="data-controls">
       <button class="linklike" id="exportBtn" type="button">Export backup</button>
       <button class="linklike" id="importBtn" type="button">Import backup</button>
