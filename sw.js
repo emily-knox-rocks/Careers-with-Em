@@ -1,25 +1,21 @@
-/* Mission Control service worker: makes the dashboard installable and
-   fully usable offline. Bump CACHE on any asset change to roll out updates. */
-var CACHE = 'cwem-mc-v1';
+/* Knox Life Dashboard service worker: installable, fully usable offline.
+   Bump CACHE on any asset change to roll out updates. */
+var CACHE = 'knox-dash-v2';
 var ASSETS = [
   './dashboard.html',
   './dashboard.css',
   './dashboard.js',
-  './plan-data.js',
-  './styles.css',
   './manifest.webmanifest',
-  './fonts/fonts.css',
-  './fonts/albert-sans-latin-400-normal.woff2',
-  './fonts/albert-sans-latin-500-normal.woff2',
-  './fonts/albert-sans-latin-600-normal.woff2',
-  './fonts/albert-sans-latin-700-normal.woff2',
-  './fonts/albert-sans-latin-800-normal.woff2',
-  './fonts/inter-latin-400-normal.woff2',
-  './fonts/inter-latin-500-normal.woff2',
-  './fonts/inter-latin-600-normal.woff2',
-  './fonts/inter-latin-700-normal.woff2',
-  './brand/logos/icon-192.png',
-  './brand/logos/icon-512.png'
+  './fonts/knox-fonts.css',
+  './fonts/cormorant-garamond-latin-500-normal.woff2',
+  './fonts/cormorant-garamond-latin-600-normal.woff2',
+  './fonts/cormorant-garamond-latin-700-normal.woff2',
+  './fonts/cormorant-garamond-latin-600-italic.woff2',
+  './fonts/jost-latin-400-normal.woff2',
+  './fonts/jost-latin-500-normal.woff2',
+  './fonts/jost-latin-600-normal.woff2',
+  './icons/knox-192.png',
+  './icons/knox-512.png'
 ];
 
 self.addEventListener('install', function(e){

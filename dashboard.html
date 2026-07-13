@@ -3,209 +3,295 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mission Control · Careers with Em</title>
-<meta name="description" content="Em's private life dashboard: show up daily, run the A to Z plan, track recovery, workouts, and the people met along the way.">
+<title>Knox Life Dashboard</title>
+<meta name="description" content="A private alignment board. Trend over streak, cycle-aware baselines, battery before character.">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#FAF7F2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Mission Control">
+<meta name="apple-mobile-web-app-title" content="Knox Dash">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="brand/logos/icon-192.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%232c77e7%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27sans-serif%27 font-size=%2716%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3Eem%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="fonts/fonts.css">
-<link rel="stylesheet" href="styles.css">
+<link rel="apple-touch-icon" href="icons/knox-192.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%233D2B1F%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27Georgia,serif%27 font-style=%27italic%27 font-size=%2715%27 font-weight=%27600%27 fill=%27%23C9A96E%27 text-anchor=%27middle%27%3Eek%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts/knox-fonts.css">
 <link rel="stylesheet" href="dashboard.css">
-<script src="plan-data.js" defer></script>
 <script src="dashboard.js" defer></script>
 </head>
-<body class="dash">
+<body>
 
 <nav>
   <div class="wrap">
-    <div>
-      <a class="wordmark" href="index.html">careers<span>with</span>em</a><span class="nav-tag">mission control</span>
-    </div>
+    <a class="wordmark" href="#top">knox<i>&middot;board</i></a>
     <div class="nav-links">
-      <a href="index.html">Site</a>
-      <a href="challenge.html">Challenge</a>
-      <span class="streak-pill" id="streakPill" title="Consecutive days with at least one logged action"><span class="dot"></span><span class="num" id="streakNum">0</span>&nbsp;day streak</span>
+      <a href="#today">Today</a>
+      <a href="#milestones">Milestones</a>
+      <a href="#regulation">Regulation</a>
+      <a href="#rhythm">Rhythm</a>
+      <a href="#cycle">Cycle</a>
+      <a href="#review">Review</a>
     </div>
   </div>
 </nav>
 
-<header class="dash-hero">
+<header id="top">
   <div class="wrap">
-    <div>
-      <span class="eyebrow">Mission control</span>
-      <h1>Show up <span class="grad-text">today</span>, Em.</h1>
-      <p class="today-line" id="todayLine">Loading the day…</p>
-    </div>
-    <div class="checkin">
-      <div class="checkin-copy">
-        <h3 id="checkinTitle">Plant today's square</h3>
-        <p id="checkinSub">One click. Everything else you log today deepens the color.</p>
-      </div>
-      <button class="btn" id="checkinBtn" type="button">I showed up today</button>
-    </div>
+    <span class="eyebrow">Knox life dashboard</span>
+    <h1>Alignment, not surveillance.</h1>
+    <p class="laws">Trend over streak. Cycle-aware baselines. Battery before character.</p>
+    <p class="date-line" id="dateLine"></p>
+    <p class="mantra" id="mantraLine"></p>
+    <div class="template-banner" id="templateBanner"></div>
   </div>
 </header>
 
-<section class="dash-main">
+<main>
   <div class="wrap">
 
-    <!-- Headline numbers -->
-    <div class="stat-row" id="statRow">
-      <div class="stat goal-stat">
-        <span class="label">#1 goal · run Careers with Em full-time</span>
-        <span class="value" id="goalPct">0%</span>
-        <div class="bar"><i id="goalBar" style="width:0%"></i></div>
-        <p class="sub" id="goalSub">0 of 26 steps complete</p>
-      </div>
-      <div class="stat">
-        <span class="label">Active days, last year</span>
-        <span class="value" id="statActive">0</span>
-        <p class="sub">days on the board</p>
-      </div>
-      <div class="stat">
-        <span class="label">Workouts this week</span>
-        <span class="value" id="statWorkouts">0<small> / 4</small></span>
-        <p class="sub" id="statWorkoutsSub">target: 4 per week</p>
-      </div>
-      <div class="stat">
-        <span class="label">Recovery today</span>
-        <span class="value" id="statRecovery">–</span>
-        <p class="sub" id="statRecoverySub">log this morning's Whoop</p>
-      </div>
-      <div class="stat">
-        <span class="label">People remembered</span>
-        <span class="value" id="statPeople">0</span>
-        <p class="sub" id="statPeopleSub">no follow-ups due</p>
-      </div>
-    </div>
+    <!-- Achievements -->
+    <section id="achievements" aria-label="Achievement stats">
+      <div class="ach-strip" id="achStrip"></div>
+      <div class="next-milestone" id="nextMilestone"></div>
+      <div class="alltime" id="allTime"></div>
+    </section>
 
-    <!-- The art of showing up -->
-    <div class="heat-card" data-reveal>
-      <div class="heat-head">
-        <h2>The art of showing up every day</h2>
-        <span class="heat-count" id="heatCount"></span>
+    <!-- Today -->
+    <section id="today">
+      <div class="sec-head">
+        <h2>Today</h2>
+        <span class="sec-note">usable in under a minute, backfill is guilt-free</span>
       </div>
-      <div class="heat-scroll">
-        <div class="hm-months" id="hmMonths"></div>
-        <div class="heatmap">
-          <div class="hm-labels"><span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span></div>
-          <div style="display:flex;gap:3px" id="hmGrid"></div>
+      <div class="today-grid">
+        <div class="card">
+          <div class="today-head">
+            <h3 id="todayTitle">Today</h3>
+            <input type="date" id="logDate" aria-label="Date being logged">
+          </div>
+          <div class="phase-row" id="phaseRow"></div>
+          <div class="floor-list" id="floorList"></div>
+          <p class="floor-done" id="floorDone"></p>
+          <div class="sym-row" id="symRow"></div>
+          <div class="mini-form">
+            <div class="field" style="max-width:110px">
+              <label for="sleepHours">Sleep hours</label>
+              <input id="sleepHours" type="number" min="0" max="14" step="0.5" placeholder="7.5">
+            </div>
+            <div class="field notes-area" style="flex:3">
+              <label for="dayNotes">One honest line about today</label>
+              <textarea id="dayNotes" maxlength="500" placeholder="What happened, what I made of it, what is actually true."></textarea>
+            </div>
+          </div>
+          <div id="batterySlot"></div>
+          <div class="quick-row">
+            <button class="btn btn-sm" id="qWin" type="button">+ Win</button>
+            <button class="btn btn-soft btn-sm" id="qBlocker" type="button">+ Blocker caught</button>
+            <button class="btn btn-soft btn-sm" id="qBid" type="button">+ Friendship bid</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>The assignment</h3>
+          <p class="sub" id="assignSub"></p>
+          <div class="assign" id="moveAssign" style="margin-top:12px"></div>
+          <div class="mini-form" id="moveForm">
+            <div class="field" style="flex:1.3">
+              <label for="mvType">Movement</label>
+              <select id="mvType"></select>
+            </div>
+            <div class="field" style="max-width:90px">
+              <label for="mvMins">Minutes</label>
+              <input id="mvMins" type="number" min="1" max="600" placeholder="20">
+            </div>
+            <button class="toggle-chip" id="mvSauna" type="button">sauna</button>
+            <button class="toggle-chip" id="mvCold" type="button">cold</button>
+            <button class="btn btn-sm" id="mvLog" type="button">Log it</button>
+          </div>
+          <ul class="moved-list" id="movedList"></ul>
+          <div class="assign" id="workFocus" style="margin-top:14px"></div>
+          <ul class="anchors" id="anchorList"></ul>
         </div>
       </div>
-      <div class="heat-foot">
-        <span>A square fills for any logged action: check-in, step, workout, Whoop, or a new connection.</span>
-        <span class="heat-legend">Less&nbsp;
-          <span class="hm-cell"></span><span class="hm-cell l1"></span><span class="hm-cell l2"></span><span class="hm-cell l3"></span><span class="hm-cell l4"></span>
-          &nbsp;More</span>
-      </div>
-    </div>
+    </section>
 
-    <!-- The A to Z engine -->
-    <div class="plan-grid">
-      <div class="now-card" id="nowCard"></div>
-      <div class="letters-card">
-        <h3>The A to Z plan</h3>
-        <p class="sub">One letter at a time. Finish the current step and the next one takes its place.</p>
-        <div class="letter-grid" id="letterGrid"></div>
-        <div class="phase-list" id="phaseList"></div>
-        <div class="letter-detail" id="letterDetail"></div>
+    <!-- Milestones -->
+    <section id="milestones">
+      <div class="sec-head">
+        <h2>Milestones</h2>
+        <span class="sec-note">gold gets earned here</span>
       </div>
-    </div>
+      <div class="mile-grid">
+        <div class="card">
+          <h3>Gem to Greenhouse migration</h3>
+          <p class="sub">Eight phases, owned end to end. Every completed phase feeds the conversion case.</p>
+          <div class="gold-bar"><i id="phaseBar" style="width:0%"></i></div>
+          <p class="sub" id="phaseCount"></p>
+          <ul class="phase-track" id="phaseTrack"></ul>
+          <div class="evidence-line">
+            <span id="evidenceCount"></span>
+            <button class="linklike" id="exportCase" type="button">Export the evidence document</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <h3>End of 2026 markers</h3>
+            <p class="sub">The best-case checklist. Each one checked is a milestone registered.</p>
+            <ul class="marker-list" id="markerList"></ul>
+          </div>
+          <div class="card" style="margin-top:16px">
+            <h3>Recent wins</h3>
+            <p class="sub">First-class data, same weight as any habit metric.</p>
+            <ul class="win-feed" id="winFeed"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Body: Whoop + workouts -->
-    <div class="log-grid">
-      <div class="log-card" id="whoopCard">
-        <div class="log-head">
-          <h3>Whoop</h3>
-          <span class="mono-note" id="whoopNote">manual log · 30 seconds</span>
-        </div>
-        <div id="whoopBody"></div>
+    <!-- Regulation -->
+    <section id="regulation">
+      <div class="sec-head">
+        <h2>Regulation</h2>
+        <span class="sec-note">the master metric: time from feeling to interrupt</span>
       </div>
-      <div class="log-card">
-        <div class="log-head">
-          <h3>Workouts</h3>
-          <span class="mono-note" id="workoutWeekNote"></span>
+      <div class="reg-grid">
+        <div class="card">
+          <h3>Time to interrupt</h3>
+          <p class="sub">Events are expected and healthy. The gap shrinking is the growth arc.</p>
+          <div id="ttiChart" class="chart-box"></div>
+          <div id="prSlot"></div>
         </div>
-        <div class="week-dots" id="weekDots"></div>
-        <form id="workoutForm">
-          <div class="field-row">
-            <div class="field" style="flex:1.2">
-              <label for="woType">Type</label>
-              <select id="woType">
-                <option>Strength</option><option>Run</option><option>Ride</option><option>Yoga</option><option>Walk</option><option>HIIT</option><option>Other</option>
-              </select>
+        <div class="card">
+          <h3>28-day picture</h3>
+          <div class="reg-stats" id="regStats"></div>
+          <div class="type-bars" id="typeBars"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rhythm -->
+    <section id="rhythm">
+      <div class="sec-head">
+        <h2>Weekly rhythm</h2>
+        <span class="sec-note">graded against the active template, always</span>
+      </div>
+      <div class="rhythm-grid">
+        <div class="card">
+          <h3>Learning: systems and AI</h3>
+          <p class="sub">Learning that ships beats learning that sits.</p>
+          <div class="paa-row" id="paaRow"></div>
+          <div class="field" id="appliedField">
+            <label for="appliedDesc">What shipped this week</label>
+            <input id="appliedDesc" type="text" maxlength="120" placeholder="The AI-assisted improvement that went live.">
+          </div>
+          <div class="dot-grid" id="learnDots"></div>
+        </div>
+        <div class="card">
+          <h3>Friendship bids</h3>
+          <p class="sub">Two lines, specific and warm, no agenda. Target: two or more a week.</p>
+          <p class="week-target" id="bidTarget"></p>
+          <div class="mini-form">
+            <div class="field">
+              <label for="bidCircle">Circle</label>
+              <select id="bidCircle"><option value="inner">Inner</option><option value="extended">Extended</option><option value="new">New</option></select>
             </div>
             <div class="field">
-              <label for="woMins">Minutes</label>
-              <input id="woMins" type="number" min="1" max="600" placeholder="45">
+              <label for="bidType">Type</label>
+              <select id="bidType"><option value="text">Text</option><option value="plan">Plan</option><option value="repair">Repair</option><option value="gratitude">Gratitude</option></select>
             </div>
-            <div class="field" style="flex:1.6">
-              <label for="woNote">Note</label>
-              <input id="woNote" type="text" maxlength="60" placeholder="optional">
+            <button class="toggle-chip on" id="bidInit" type="button">I initiated</button>
+            <button class="btn btn-sm" id="bidLog" type="button">Log bid</button>
+          </div>
+          <p class="week-target" id="bidRatio"></p>
+        </div>
+        <div class="card">
+          <h3>Money</h3>
+          <p class="sub">Twenty minutes on Friday. The numbers are facts, and facts are handleable.</p>
+          <div class="money-dots" id="moneyDots"></div>
+          <div class="mini-form">
+            <div class="field" style="flex:1.4">
+              <label for="moneyNumber">The one number watched</label>
+              <input id="moneyNumber" type="text" maxlength="40" placeholder="e.g. buffer balance">
             </div>
+            <button class="btn btn-sm" id="moneyLog" type="button">Check done</button>
           </div>
-          <div class="form-foot">
-            <button class="btn btn-sm" type="submit">Log workout</button>
+          <div class="watched-number" id="watchedNumber"></div>
+          <div id="moneyNudge"></div>
+        </div>
+        <div class="card">
+          <h3>Creative: author voice</h3>
+          <p class="sub">Posting from perspective, not for proof. Numbers are data, never verdicts.</p>
+          <div class="mini-form">
+            <div class="field">
+              <label for="postType">This week</label>
+              <select id="postType"><option value="post">Posted</option><option value="draft">Drafted</option></select>
+            </div>
+            <button class="toggle-chip on" id="postPersp" type="button">from perspective</button>
+            <button class="btn btn-sm" id="postLog" type="button">Log it</button>
           </div>
-        </form>
-        <ul class="recent-list" id="workoutList"></ul>
+          <div class="dot-grid" id="postDots"></div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Connections -->
-    <div class="people-card">
-      <div class="log-head">
-        <h3>Connections</h3>
-        <span class="mono-note">names and details, so you never blank on either</span>
+    <!-- Cycle -->
+    <section id="cycle">
+      <div class="sec-head">
+        <h2>Cycle</h2>
+        <span class="sec-note">planned terrain, not an ambush</span>
       </div>
-      <form id="personForm">
-        <div class="field-row">
-          <div class="field" style="flex:1.1">
-            <label for="pName">Name</label>
-            <input id="pName" type="text" maxlength="60" placeholder="Jordan Lee" required>
+      <div class="cycle-grid">
+        <div class="card">
+          <h3>Last 28 days</h3>
+          <p class="sub">Phase logged daily. Missing days are missing, never zeros.</p>
+          <div class="phase-strip" id="phaseStrip"></div>
+          <div class="ps-legend">
+            <span><i style="background:#E8D5C4"></i>menstrual</span>
+            <span><i style="background:#CFE0D2"></i>follicular</span>
+            <span><i style="background:#F3E9D7"></i>ovulatory</span>
+            <span><i style="background:#D6DEE8"></i>luteal</span>
           </div>
-          <div class="field" style="flex:1.3">
-            <label for="pMet">How we met</label>
-            <input id="pMet" type="text" maxlength="80" placeholder="AI careers meetup, July">
-          </div>
-          <div class="field" style="flex:1.2">
-            <label for="pRole">Company · role</label>
-            <input id="pRole" type="text" maxlength="80" placeholder="Recruiter at Loom">
-          </div>
-          <div class="field">
-            <label for="pFollow">Follow up on</label>
-            <input id="pFollow" type="date">
-          </div>
+          <div id="symChart" class="chart-box"></div>
         </div>
-        <div class="field-row" style="margin-top:10px">
-          <div class="field">
-            <label for="pNotes">Worth remembering</label>
-            <textarea id="pNotes" maxlength="400" placeholder="Two kids, training for a half marathon, hiring for ops in the fall. Mentioned she hates cover letters."></textarea>
-          </div>
+        <div class="card">
+          <h3>Protocol</h3>
+          <div class="reg-stats" id="cycleStats"></div>
+          <div id="escalationSlot"></div>
         </div>
-        <div class="form-foot">
-          <button class="btn btn-sm" type="submit" id="personSubmit">Add person</button>
-          <button class="linklike" type="button" id="personCancel" hidden>Cancel edit</button>
-          <div class="field search-input" style="margin-left:auto">
-            <input id="personSearch" type="search" placeholder="Search people…" aria-label="Search people">
-          </div>
+      </div>
+    </section>
+
+    <!-- Review -->
+    <section id="review">
+      <div class="sec-head">
+        <h2>Weekly review</h2>
+        <span class="sec-note">one question, and the answer is always something</span>
+      </div>
+      <div class="card review-card">
+        <p class="review-q">What did I build this week?</p>
+        <div class="field"><textarea id="revBuilt" maxlength="1000" placeholder="Something got built. Name it."></textarea></div>
+        <p class="mix-line" id="mixLine"></p>
+        <div class="mini-form">
+          <div class="field"><label for="revShowed">Who did I show up for</label><input id="revShowed" type="text" maxlength="120"></div>
+          <div class="field"><label for="revAdjust">One adjustment for next week</label><input id="revAdjust" type="text" maxlength="120"></div>
+          <button class="btn btn-sm" id="revSave" type="button">Save review</button>
         </div>
-      </form>
-      <div class="people-grid" id="peopleGrid"></div>
-    </div>
+        <ul class="past-reviews" id="pastReviews"></ul>
+      </div>
+    </section>
+
+    <!-- Showing up -->
+    <section id="showup" aria-label="Days with data">
+      <div class="showup-card">
+        <h3>The record of showing up</h3>
+        <div class="showup-scroll"><div class="showup" id="showupGrid"></div></div>
+        <p class="su-note" id="showupNote"></p>
+      </div>
+    </section>
 
   </div>
-</section>
+</main>
 
 <footer>
   <div class="wrap">
-    <div>Mission Control · data lives only in this browser
-      <span class="install-hint" id="installHint">· on your phone, open the browser menu and tap <b>Add to Home Screen</b> to use this as an app</span>
+    <div>Everything here stays in this browser. No analytics, no sync, nothing leaves the machine.
+      <span class="install-hint">On your phone: browser menu, then <b>Add to Home Screen</b>.</span>
     </div>
     <div class="data-controls">
       <button class="linklike" id="exportBtn" type="button">Export backup</button>
@@ -216,7 +302,6 @@
   </div>
 </footer>
 
-<div class="hm-tip" id="hmTip" role="tooltip" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status"><span id="toastMsg"></span><button id="toastAction" type="button" hidden></button></div>
 
 </body>
