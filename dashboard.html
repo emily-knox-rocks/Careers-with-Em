@@ -329,6 +329,31 @@ kbd{font-family:var(--font-mono);font-size:10.5px;background:var(--card);border:
 .tip-row .sw{width:10px;height:3px;border-radius:2px;flex:none}
 .tip-title{font-weight:700;margin-bottom:2px}
 
+/* ============ Windows callout, toast, tour, extras ============ */
+.window-lines{margin-top:10px;display:grid;gap:4px}
+.wline{font-size:12.5px;color:var(--ink-2);display:flex;gap:7px;align-items:baseline}
+.wline .sw{width:9px;height:9px;border-radius:3px;flex:none;align-self:center}
+.wline b{color:var(--ink);font-weight:600}
+.menu-note{font-size:11.5px;color:var(--ink-3);padding:6px 10px;border-bottom:1px solid var(--hairline);margin-bottom:4px}
+.tool-btn.stale::after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-left:6px;vertical-align:1px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:10px;display:flex;gap:14px;align-items:center;z-index:65;box-shadow:var(--shadow-md);font-size:13.5px;max-width:min(92vw,480px)}
+#toast button{color:#7ab3ff;font-weight:700;font-size:13.5px}
+:root[data-theme="dark"] #toast{background:#f2f5f8;color:#101828}
+:root[data-theme="dark"] #toast button{color:#2569d4}
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])) #toast{background:#f2f5f8;color:#101828}
+:root:where(:not([data-theme="light"])) #toast button{color:#2569d4}}
+#tourBack{position:fixed;inset:0;background:rgba(9,13,20,.55);z-index:70}
+.tour-lift{z-index:71!important;outline:3px solid var(--brand);outline-offset:4px;border-radius:12px}
+.tour-lift:not(nav){position:relative}
+#tourPop{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:72;width:min(92vw,420px);background:var(--card);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-card-hover);padding:16px 18px}
+#tourPop h4{font-family:var(--font-display);font-size:16px;color:var(--ink);margin:2px 0 4px}
+#tourPop p{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+.tour-step{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--accent-text)}
+.tour-row{display:flex;gap:8px;align-items:center;margin-top:12px}
+.tour-row .btn-pri,.tour-row .btn-ghost{padding:7px 14px;font-size:13px}
+.tour-skip{margin-left:auto;font-size:12.5px;color:var(--ink-3)}
+.tour-skip:hover{color:var(--ink)}
+
 /* ============ Responsive ============ */
 @media(max-width:1020px){
   .g-today{grid-template-columns:1fr 1fr}
@@ -363,10 +388,12 @@ kbd{font-family:var(--font-mono);font-size:10.5px;background:var(--card);border:
     <span class="nav-tag">Talent Systems OS</span>
     <div class="nav-tools">
       <span class="clock" id="clock" aria-hidden="true"></span>
+      <button class="tool-btn" id="tourBtn" title="Replay the guided tour">✦ Tour</button>
       <button class="tool-btn" id="themeBtn" title="Cycle theme: auto / light / dark">◐ Auto</button>
       <div class="menu" id="dataMenu">
         <button class="tool-btn" id="dataBtn" aria-haspopup="true" aria-expanded="false">Data ▾</button>
         <div class="menu-pop" role="menu">
+          <div class="menu-note" id="backupNote"></div>
           <button id="exportBtn" role="menuitem">Export backup (JSON)</button>
           <button id="importBtn" role="menuitem">Import backup…</button>
           <button id="resetBtn" role="menuitem" class="danger">Reset everything</button>
@@ -433,7 +460,7 @@ kbd{font-family:var(--font-mono);font-size:10.5px;background:var(--card);border:
   </div>
 
   <footer class="dash-foot">
-    <b>Your data stays in this browser</b> (localStorage) — nothing is sent anywhere. Export a JSON backup from the Data menu before switching machines. Shortcuts: <kbd>C</kbd> capture a thought · <kbd>T</kbd> start/pause focus.<br>
+    <b>Your data stays in this browser</b> (localStorage) — nothing is sent anywhere. Export a JSON backup from the Data menu before switching machines. Shortcuts: <kbd>1</kbd>–<kbd>5</kbd> log energy · <kbd>C</kbd> capture a thought · <kbd>T</kbd> start/pause focus. Lost? Replay the <b>✦ Tour</b> from the top bar.<br>
     Cycle phases here are a <b>planning model</b> (luteal held at ~14 days), not medical advice — tune the dates to your own logged pattern, and PMDD deserves clinical backup, not just a dashboard. Chart palettes are CVD-validated per the dataviz standard; every chart has a table view.
   </footer>
 </main>
@@ -450,7 +477,6 @@ const el=(t,p,...kids)=>{const n=document.createElement(t);for(const[k,v]of Obje
   if(v===null||v===undefined)continue;
   if(k==='class')n.className=v;
   else if(k==='text')n.textContent=v;
-  else if(k==='html')n.innerHTML=v; /* static authored strings only */
   else if(k.startsWith('on'))n.addEventListener(k.slice(2),v);
   else n.setAttribute(k,v);}
   for(const c of kids.flat(9))if(c!==null&&c!==undefined)n.append(c.nodeType?c:document.createTextNode(c));
@@ -583,6 +609,17 @@ function hoverable(node,fn){
   node.addEventListener('pointerleave',hideTip);
   node.addEventListener('focus',()=>{const r=node.getBoundingClientRect();fn(r.left+r.width/2,r.top);});
   node.addEventListener('blur',hideTip);
+}
+
+/* ---------- undo toast ---------- */
+let toastTimer=null;
+function toast(msg,undoFn){
+  let t=$('#toast');if(t)t.remove();
+  t=el('div',{id:'toast',role:'status'},el('span',{text:msg}));
+  if(undoFn)t.append(el('button',{onclick:()=>{clearTimeout(toastTimer);t.remove();undoFn();},text:'Undo'}));
+  document.body.append(t);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.remove(),6000);
 }
 
 /* ---------- inline number editing ---------- */
@@ -718,7 +755,10 @@ function renderPriorities(){
         S.inbox.unshift({id:uid(),text:p.text||'(untitled)'});
         S.priorities[t]=list.filter(x=>x.id!==p.id);save();renderPriorities();},text:'↓'}),
       el('button',{class:'icon-btn',title:'Delete','aria-label':'Delete priority',onclick:()=>{
-        S.priorities[t]=list.filter(x=>x.id!==p.id);save();renderPriorities();},text:'✕'}));
+        const idx=list.indexOf(p);
+        S.priorities[t]=list.filter(x=>x.id!==p.id);save();renderPriorities();
+        toast('Deleted “'+(p.text||'untitled')+'”',()=>{const cur=S.priorities[todayKey()]||[];
+          cur.splice(Math.min(idx,cur.length),0,p);S.priorities[todayKey()]=cur;save();renderPriorities();});},text:'✕'}));
     item.append(tx,tools,
       el('input',{class:'p-next',value:p.next||'',placeholder:'→ next physical action (make it stupid-small)',
         onchange:e=>{p.next=e.target.value.trim();save();}}));
@@ -746,7 +786,9 @@ function renderPriorities(){
         onclick:()=>{S.priorities[t].push({id:uid(),text:it.text,next:'',done:false});
           S.inbox=S.inbox.filter(x=>x.id!==it.id);save();renderPriorities();},text:'↑'}),
       el('button',{class:'icon-btn','aria-label':'Delete captured item',title:'Delete',
-        onclick:()=>{S.inbox=S.inbox.filter(x=>x.id!==it.id);save();renderPriorities();},text:'✕'})));
+        onclick:()=>{const idx=S.inbox.indexOf(it);
+          S.inbox=S.inbox.filter(x=>x.id!==it.id);save();renderPriorities();
+          toast('Deleted “'+it.text+'”',()=>{S.inbox.splice(Math.min(idx,S.inbox.length),0,it);save();renderPriorities();});},text:'✕'})));
   });
   if(S.inbox.length>4)box.append(el('div',{class:'stat-line',text:'+ '+(S.inbox.length-4)+' more parked — triage at shutdown'}));
   if(!S.inbox.length)box.append(el('div',{class:'stat-line',text:'Inbox clear. Nice.'}));
@@ -852,7 +894,20 @@ function renderCycle(){
   Object.values(PHASES).forEach(p=>lg.append(el('span',{class:'li'},el('span',{class:'sw',style:'background:var(--s'+p.slot+')'}),p.name)));
   lg.append(el('span',{class:'li'},el('span',{class:'wl-key'}),'PMDD watch'),
     el('span',{class:'li'},el('span',{class:'sw',style:'background:transparent;box-shadow:0 0 0 2px var(--ink) inset'}),'today'));
-  wrap.append(lg,tt.holder);
+  wrap.append(lg);
+  /* next-window callouts: real dates to plan meetings around */
+  const nextWindow=pred=>{let s=null;
+    for(let i=0;i<=35;i++){const ok=pred(cycleInfo(dkey(addDays(new Date(),i))));
+      if(ok&&s===null)s=i;else if(!ok&&s!==null)return{start:s,end:i-1};}
+    return s!==null?{start:s,end:35}:null;};
+  const rng=w=>(w.start===0?'now':fmtShort(dkey(addDays(new Date(),w.start))))+' – '+fmtShort(dkey(addDays(new Date(),w.end)));
+  const peak=nextWindow(c=>c.phase==='ovulatory'),watch=nextWindow(c=>c.watch);
+  const wl=el('div',{class:'window-lines'});
+  if(peak)wl.append(el('div',{class:'wline'},el('span',{class:'sw',style:'background:var(--s3)'}),
+    el('span',null,'Peak window ',el('b',{text:rng(peak)}),' — pre-book the exec room, the demo, the ask.')));
+  if(watch)wl.append(el('div',{class:'wline'},el('span',{class:'sw',style:'background:var(--warn)'}),
+    el('span',null,'Watch window ',el('b',{text:rng(watch)}),' — buffer it; move what you can now, while it’s easy.')));
+  wrap.append(wl,tt.holder);
   card.append(wrap);
   /* settings */
   const det=el('details',{class:'settings'},el('summary',{text:'Cycle settings'}));
@@ -1051,7 +1106,10 @@ function renderTrackers(){
         onclick:()=>{item.stage=(item.stage+1)%def.stages.length;save();renderTrackers();renderComposer();},
         text:def.stages[item.stage]}));
       row.append(el('button',{class:'icon-btn','aria-label':'Delete '+item.name,title:'Delete',
-        onclick:()=>{S.trackers[def.key]=S.trackers[def.key].filter(x=>x.id!==item.id);save();renderTrackers();renderComposer();},text:'✕'}));
+        onclick:()=>{const idx=S.trackers[def.key].indexOf(item);
+          S.trackers[def.key]=S.trackers[def.key].filter(x=>x.id!==item.id);save();renderTrackers();renderComposer();
+          toast('Deleted “'+(item.name||'untitled')+'”',()=>{S.trackers[def.key].splice(Math.min(idx,S.trackers[def.key].length),0,item);
+            save();renderTrackers();renderComposer();});},text:'✕'}));
       row.append(el('input',{class:'trk-note',value:item.note,placeholder:'next step / note',
         onchange:e=>{item.note=e.target.value.trim();save();}}));
       card.append(row);
@@ -1081,7 +1139,10 @@ function renderWins(){
   S.wins.slice(0,6).forEach(w=>{
     const it=el('div',{class:'win-item'});
     it.append(el('div',{class:'win-head'},el('span',{class:'win-date',text:fmtShort(w.date)}),el('span',{class:'win-text',text:w.text}),
-      el('button',{class:'icon-btn','aria-label':'Delete win',title:'Delete',onclick:()=>{S.wins=S.wins.filter(x=>x.id!==w.id);save();renderWins();renderComposer();},text:'✕'})));
+      el('button',{class:'icon-btn','aria-label':'Delete win',title:'Delete',onclick:()=>{
+        const idx=S.wins.indexOf(w);
+        S.wins=S.wins.filter(x=>x.id!==w.id);save();renderWins();renderComposer();
+        toast('Deleted win — receipts matter',()=>{S.wins.splice(Math.min(idx,S.wins.length),0,w);save();renderWins();renderComposer();});},text:'✕'})));
     if(w.metric||w.aud)it.append(el('div',{class:'win-meta'},w.metric?el('b',{text:w.metric}):null,w.metric&&w.aud?' · ':'',w.aud?'seen by '+w.aud:''));
     card.append(it);
   });
@@ -1141,8 +1202,14 @@ function renderRituals(){
   S.rituals[t]=S.rituals[t]||{m:RIT_M.map(()=>false),s:RIT_S.map(()=>false)};
   const R=S.rituals[t];
   const card=$('#cardR');card.textContent='';
+  /* shutdown streak: consecutive days with ≥4/5 shutdown items checked */
+  let streakN=0;
+  {const today=S.rituals[t];const todayDone=today&&today.s.filter(Boolean).length>=4;
+   for(let i=1;i<=60;i++){const r=S.rituals[dkey(addDays(new Date(),-i))];
+     if(r&&r.s.filter(Boolean).length>=4)streakN++;else break;}
+   if(todayDone)streakN++;}
   card.append(el('div',{class:'card-h'},el('h3',{text:'Daily rituals'}),
-    el('span',{class:'hint',text:'same rails every day — decisions cost energy, rails don’t'})));
+    el('span',{class:'hint',text:streakN>=2?'🔥 '+streakN+'-day shutdown streak — the hard stop is working':'same rails every day — decisions cost energy, rails don’t'})));
   const mk=(title,defs,arr,key)=>{
     const done=arr.filter(Boolean).length;
     const col=el('div');
@@ -1180,12 +1247,22 @@ $('#themeBtn').addEventListener('click',()=>{
   S.settings.theme=THEMES[(i+1)%3][0];save();applyTheme();
 });
 const menu=$('#dataMenu'),dataBtn=$('#dataBtn');
-dataBtn.addEventListener('click',e=>{e.stopPropagation();menu.classList.toggle('open');dataBtn.setAttribute('aria-expanded',menu.classList.contains('open'));});
+function backupStale(){
+  const le=S.settings.lastExport;
+  if(!le)return Object.keys(S.energy).length>0||Object.keys(S.rituals).length>1;
+  return (new Date()-parseKey(le))/864e5>14;
+}
+function updateDataDot(){
+  dataBtn.classList.toggle('stale',backupStale());
+  $('#backupNote').textContent='Last backup: '+(S.settings.lastExport?fmtShort(S.settings.lastExport):'never');
+}
+dataBtn.addEventListener('click',e=>{e.stopPropagation();updateDataDot();menu.classList.toggle('open');dataBtn.setAttribute('aria-expanded',menu.classList.contains('open'));});
 document.addEventListener('click',()=>{menu.classList.remove('open');dataBtn.setAttribute('aria-expanded','false');});
 $('#exportBtn').addEventListener('click',()=>{
   const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
   const a=el('a',{href:URL.createObjectURL(blob),download:'em-dashboard-backup-'+todayKey()+'.json'});
   document.body.append(a);a.click();a.remove();
+  S.settings.lastExport=todayKey();save();updateDataDot();
 });
 $('#importBtn').addEventListener('click',()=>$('#importFile').click());
 $('#importFile').addEventListener('change',e=>{
@@ -1201,20 +1278,78 @@ $('#resetBtn').addEventListener('click',()=>{
   if(confirm('Reset the whole board to sample data? Export a backup first if in doubt.')){S=seed();save();renderAll();}
 });
 
+/* ---------- guided tour ---------- */
+const TOUR=[
+  {sel:'#energyCtl',title:'Start here every morning',text:'Tap how full your battery is, 1 to 5 (or just press the number key). The whole board rearranges itself around your answer — low days shrink the plan, high days point you at the big stuff.'},
+  {sel:'#opNote',title:'Your marching orders',text:'This strip reads your energy, your cycle phase, and your strain pattern, then tells you what kind of day to run. One glance, no deciding.'},
+  {sel:'#cardP',title:'Only three things count',text:'These are today’s needle movers — the board won’t let you hoard more than 3. Each gets a tiny “next physical action” so starting is easy. Stray thought mid-task? Press C and park it in Quick capture instead of chasing it.'},
+  {sel:'#cardF',title:'Work in blocks, not marathons',text:'Pick 15, 25, or 50 minutes and press Start (or press T). It chimes, then hands you a 5-minute break. Finished blocks count up — small wins, on purpose.'},
+  {sel:'#cardC',title:'Your energy weather forecast',text:'The colored strip is the next 14 days of your cycle. Book big-visibility work on peak days; pad the underlined PMDD-watch days with buffers. Open “Cycle settings” below it and put in your real dates — it ships with samples.'},
+  {sel:'#cardE',title:'Your pattern, plus a tripwire',text:'Every energy tap becomes a dot here — two weeks in, you’ll see your real pattern. Three low days in a row trips the burnout guardrail and flips the whole board into protect mode automatically.'},
+  {sel:'#kpiRow',title:'The numbers leadership asks for',text:'Click any number and type to update it from Gem or Snowflake. The “Integrations healthy” tile fills itself from the board below.'},
+  {sel:'#cardInt',title:'Your morning sweep',text:'These are the seams you own. Click a status pill to cycle it — Healthy, Watch, Degraded, Down — and jot what you’re watching. Hand-set on purpose: you’re the telemetry.'},
+  {sel:'#cardW',title:'Keep receipts',text:'Log a win the day it lands, with the number attached. Loud isn’t the same as visible — this list becomes your promotion case, and “Copy promo doc” exports it in one click.'},
+  {sel:'#cardU',title:'The Friday magic button',text:'This writes your exec update for you, live from everything on the board. Add a one-line TL;DR, hit Copy update, paste into Slack. Zero Friday-afternoon archaeology.'},
+  {sel:'#cardR',title:'Rails, not decisions',text:'Same startup and shutdown lists every day — rails don’t cost energy. The shutdown streak grows when you actually stop. Recovery is production.'},
+  {sel:'nav',title:'Your data lives up here',text:'✦ Tour replays this anytime. The theme button cycles auto/light/dark. Data ▾ exports a backup file — everything stays in this browser, so grab a backup now and then.'}];
+let tourI=-1;
+const tourBack=el('div',{id:'tourBack',hidden:''});
+const tourPop=el('div',{id:'tourPop',role:'dialog','aria-label':'Guided tour',hidden:''});
+document.body.append(tourBack,tourPop);
+tourBack.addEventListener('click',()=>tourShow(tourI+1));
+function tourShow(i){
+  document.querySelectorAll('.tour-lift').forEach(n=>n.classList.remove('tour-lift'));
+  if(i<0)i=0;
+  if(i>=TOUR.length)return tourEnd();
+  const st=TOUR[i],target=$(st.sel);
+  if(!target)return tourShow(i+1);
+  tourI=i;
+  tourBack.hidden=false;
+  target.classList.add('tour-lift');
+  target.scrollIntoView({block:'center',behavior:reduced?'auto':'smooth'});
+  tourPop.textContent='';
+  tourPop.append(el('div',{class:'tour-step',text:(i+1)+' / '+TOUR.length}),
+    el('h4',{text:st.title}),el('p',{text:st.text}),
+    el('div',{class:'tour-row'},
+      el('button',{class:'btn-ghost',disabled:i===0?'':null,onclick:()=>tourShow(tourI-1),text:'Back'}),
+      el('button',{class:'btn-pri',onclick:()=>tourI===TOUR.length-1?tourEnd():tourShow(tourI+1),
+        text:i===TOUR.length-1?'Done — let’s go':'Next'}),
+      el('button',{class:'tour-skip',onclick:tourEnd,text:'Skip tour'})));
+  tourPop.hidden=false;
+  tourPop.querySelector('.btn-pri').focus();
+}
+function tourEnd(){
+  tourI=-1;tourBack.hidden=true;tourPop.hidden=true;
+  document.querySelectorAll('.tour-lift').forEach(n=>n.classList.remove('tour-lift'));
+  if(!S.settings.tourDone){S.settings.tourDone=true;save();}
+}
+$('#tourBtn').addEventListener('click',()=>tourShow(0));
+
 /* ---------- shortcuts ---------- */
 document.addEventListener('keydown',e=>{
+  if(tourI>=0){
+    if(e.key==='Escape'){e.preventDefault();tourEnd();}
+    else if(e.key==='ArrowRight'){e.preventDefault();tourShow(tourI+1);}
+    else if(e.key==='ArrowLeft'){e.preventDefault();tourShow(tourI-1);}
+    return;
+  }
   const tag=(e.target.tagName||'').toLowerCase();
   if(tag==='input'||tag==='textarea'||e.target.isContentEditable||e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==='c'||e.key==='C'){e.preventDefault();const c=$('#capInput');if(c){c.focus();c.scrollIntoView({block:'center',behavior:reduced?'auto':'smooth'});}}
   if(e.key==='t'||e.key==='T'){e.preventDefault();toggleTimer();}
+  if(e.key>='1'&&e.key<='5'){e.preventDefault();S.energy[todayKey()]=+e.key;save();
+    renderHead();renderPriorities();renderEnergy();renderFocus();
+    toast('Energy logged: '+e.key+' — '+E_WORDS[+e.key]);}
 });
 
 /* ---------- boot ---------- */
 function renderAll(){
   applyTheme();renderHead();renderPriorities();renderFocus();renderCycle();renderEnergy();
   renderKpis();renderFunnel();renderIntegrations();renderTrackers();renderWins();renderComposer();renderRituals();
+  updateDataDot();
 }
 renderAll();
+if(!S.settings.tourDone)setTimeout(()=>tourShow(0),700);
 $('#clock').textContent=new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
 setInterval(()=>{
   $('#clock').textContent=new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});

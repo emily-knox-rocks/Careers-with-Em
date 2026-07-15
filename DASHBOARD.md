@@ -25,11 +25,20 @@ board does three things:
    receipts, not from being the loudest in the room, and the promotion case writes
    itself as you go.
 
+## First open
+
+A **guided tour starts automatically** the first time the page loads — 12 steps,
+each one spotlights a card and says what it's for. Skip or finish it and it stays
+gone; replay it anytime from **✦ Tour** in the top bar. The three things to do on
+day one: take the tour, put your real dates into **Cycle settings**, and replace
+the sample numbers (click any number to edit it).
+
 ## Daily flow (~2 minutes)
 
 1. **Startup ritual** (Rituals card): meds/water/food, sweep the integration board,
    set needle movers, defend one focus block, log energy.
-2. **Log energy** in the header — the operating note tells you what mode you're in.
+2. **Log energy** in the header (buttons or just press `1`–`5`) — the operating
+   note tells you what mode you're in.
 3. Work the **must-win** first, in **focus blocks** (`T` starts/pauses the timer;
    it chimes into a 5-minute break and counts your blocks).
 4. Racing thought mid-block? `C` jumps to **quick capture** — park it, stay on task.
@@ -51,6 +60,9 @@ next week against the 14-day cycle ribbon.
   days, which is the standard planning approximation). Phases: menstrual (days
   1–period), follicular, ovulatory (ovulation ±1 day), luteal. The **PMDD watch
   window** is the last ~6 days of the cycle.
+- Under the ribbon, the card names your **next peak window and next watch window
+  with actual dates** — use them when you accept meeting invites: big-visibility
+  work into the peak dates, buffers into the watch dates.
 - **This is a planning model, not medical advice or a diagnosis.** Real cycles
   vary month to month and person to person. The energy log (14-day chart) is the
   ground truth — tune the dates until the ribbon matches your lived pattern. PMDD
@@ -65,7 +77,10 @@ next week against the 14-day cycle ribbon.
   treat backups accordingly.
 - **Data ▾ → Export backup** downloads a JSON snapshot; **Import** restores it.
   Do this before switching machines/browsers, and know that anyone with the
-  backup file (or this browser profile) can read it.
+  backup file (or this browser profile) can read it. The Data button grows an
+  amber dot when your last backup is stale (>14 days, or never with real logs).
+- **Deletions are undoable** for 6 seconds via the toast at the bottom of the
+  screen — impulsive clicks happen; the board forgives them.
 - First load ships **sample work data** (marked where relevant) so the board makes
   sense immediately — every number and row is editable or deletable. Reset from
   the Data menu re-seeds.
