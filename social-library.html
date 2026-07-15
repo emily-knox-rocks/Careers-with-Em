@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Em's Social Library · Phrases, questions & follow-ups</title>
+<meta name="description" content="A personal library of phrases to use, questions to ask, and follow-up message templates for every social situation.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%232c77e7%27/%3E%3Ctext x=%2716%27 y=%2722%27 font-family=%27sans-serif%27 font-size=%2716%27 font-weight=%27700%27 fill=%27white%27 text-anchor=%27middle%27%3Eem%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+<script src="site.js" defer></script>
+<style>
+/* ---- Page-specific styles (social library) ---- */
+.hero-stats{display:flex;gap:36px;margin-top:28px}
+.hero-stats .stat .val{font-family:var(--font-display);font-weight:700;font-size:34px;color:var(--black);line-height:1}
+.hero-stats .stat .lbl{font-size:13px;color:var(--text-subtle);margin-top:6px}
+
+/* Segmented control: Phrases / Questions */
+.segmented{display:inline-flex;background:var(--light-grey);border:1px solid var(--border);border-radius:100px;padding:4px;gap:4px}
+.segmented button{border:none;background:transparent;font-family:var(--font-sans);font-weight:600;font-size:14.5px;color:var(--grey-text);padding:9px 20px;border-radius:100px;cursor:pointer;transition:background var(--dur) var(--ease),color var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.segmented button[aria-pressed="true"]{background:var(--white);color:var(--black);box-shadow:var(--shadow-card)}
+.segmented button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+
+/* Filter pills: situations / channels */
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills button{font-family:var(--font-sans);font-weight:600;font-size:13.5px;color:var(--dark-grey);background:var(--white);border:1px solid var(--border);border-radius:100px;padding:8px 15px;cursor:pointer;transition:all var(--dur) var(--ease)}
+.pills button:hover{border-color:var(--primary);color:var(--accent-text)}
+.pills button[aria-pressed="true"]{background:var(--primary) var(--cta-grad);border-color:transparent;color:#fff;box-shadow:var(--btn-shadow)}
+.pills button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.filter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;justify-content:space-between;margin-bottom:26px}
+
+/* Line rows (phrases & questions) */
+.lines{display:grid;gap:12px}
+.line{display:flex;gap:16px;align-items:flex-start;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-2xl);padding:18px 20px;box-shadow:var(--shadow-card);transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.line:hover{transform:translateY(-2px);box-shadow:var(--shadow-card-hover)}
+.line .txt{flex:1}
+.line .say{font-size:15.5px;color:var(--black);font-weight:500;line-height:1.5}
+.line .why{font-size:13px;color:var(--text-subtle);margin-top:5px}
+.situation-note{font-size:14.5px;color:var(--grey-text);background:var(--tint);border:1px dashed var(--border);border-radius:var(--radius-xl);padding:12px 16px;margin-bottom:18px}
+
+/* Copy button */
+.copy{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-sans);font-size:12.5px;font-weight:600;color:var(--accent-text);background:var(--primary-light);border:none;border-radius:var(--radius-lg);padding:7px 12px;cursor:pointer;transition:background var(--dur) var(--ease)}
+.copy:hover{background:var(--primary-light-hover)}
+.copy:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.copy.copied{background:#e6f6ec;color:#1a7f37}
+
+/* Follow-up template cards */
+.tmpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:start}
+.tmpl{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-2xl);box-shadow:var(--shadow-card);overflow:hidden;transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.tmpl:hover{transform:translateY(-2px);box-shadow:var(--shadow-card-hover)}
+.tmpl .head{width:100%;text-align:left;background:none;border:none;padding:20px 20px 16px;cursor:pointer;font-family:var(--font-sans)}
+.tmpl .head:focus-visible{outline:3px solid var(--primary);outline-offset:-3px}
+.tmpl h3{font-size:16.5px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.tmpl h3 .caret{color:var(--primary);font-weight:700;transition:transform .2s var(--ease);flex-shrink:0}
+.tmpl[data-open] h3 .caret{transform:rotate(45deg)}
+.tmpl .when{display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:100px;background:var(--primary-light);color:var(--accent-text);margin-bottom:10px}
+.tmpl .preview{font-size:13.5px;color:var(--grey-text);line-height:1.55}
+.tmpl .full{display:none;border-top:1px dashed var(--border)}
+.tmpl[data-open] .full{display:block}
+.tmpl[data-open] .preview{display:none}
+.tmpl .body-text{padding:16px 20px;font-family:var(--font-mono);font-size:13px;line-height:1.75;color:var(--black);white-space:pre-wrap;background:var(--tint)}
+.tmpl .body-text b{color:var(--accent-text);font-weight:500}
+.tmpl .foot{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;gap:10px}
+.tmpl .tip{font-size:12.5px;color:var(--text-subtle)}
+.channel-note{font-size:14.5px;color:var(--grey-text);background:var(--tint);border:1px dashed var(--border);border-radius:var(--radius-xl);padding:12px 16px;margin-bottom:18px}
+
+@media(max-width:860px){
+  .tmpl-grid{grid-template-columns:1fr}
+  .hero-stats{gap:24px}
+  .filter-bar{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="wordmark" href="index.html">careers<span>with</span>em</a>
+    <div class="nav-links">
+      <a href="#lines">Lines</a>
+      <a href="#followup">Follow-ups</a>
+      <a class="btn" href="#followup">Jump to Follow-ups</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap" style="grid-template-columns:1fr">
+    <div data-reveal>
+      <span class="eyebrow">Personal library · For Em's eyes</span>
+      <h1>The social <span class="grad-text">outreach</span> library</h1>
+      <p class="sub" style="max-width:560px">Send-ready lines for every room, and follow-up templates for every way you swapped contacts. Filter by situation, toggle between phrases and questions, click to copy.</p>
+      <div class="hero-stats">
+        <div class="stat"><div class="val" id="stat-lines">0</div><div class="lbl">Lines &amp; questions</div></div>
+        <div class="stat"><div class="val" id="stat-templates">0</div><div class="lbl">Follow-up templates</div></div>
+        <div class="stat"><div class="val">24h</div><div class="lbl">Golden follow-up window</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="trust">
+  <div class="marquee">
+    <div class="track">
+      <div class="trust-item"><strong>Follow up within 24 hours</strong> — the memory of you is freshest</div>
+      <div class="trust-item"><strong>Name one specific moment</strong> — proof it isn't copy-paste</div>
+      <div class="trust-item"><strong>One ask per message,</strong> always</div>
+      <div class="trust-item"><strong>LinkedIn invite notes</strong> cap at 300 characters</div>
+      <div class="trust-item"><strong>Warmth ladder:</strong> text &gt; Instagram &gt; LinkedIn</div>
+      <div class="trust-item"><strong>End with an easy next step,</strong> not an open loop</div>
+    </div>
+  </div>
+</div>
+
+<section id="lines">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">In the moment</span>
+      <h2>Find your line</h2>
+      <p class="lede">Pick the situation, then toggle between phrases to use and questions to ask. Click any line to copy it.</p>
+    </div>
+    <div class="filter-bar" data-reveal>
+      <div class="pills" id="situation-pills" role="group" aria-label="Situation"></div>
+      <div class="segmented" id="mode-toggle" role="group" aria-label="Phrases or questions">
+        <button type="button" data-mode="phrases" aria-pressed="true">Phrases to use</button>
+        <button type="button" data-mode="questions" aria-pressed="false">Questions to ask</button>
+      </div>
+    </div>
+    <div class="situation-note" id="situation-note"></div>
+    <div class="lines" id="lines-list" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="light" id="followup">
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">After you meet someone</span>
+      <h2>The follow-up, by how you connected</h2>
+      <p class="lede">You got a cell number, an Instagram handle, or a LinkedIn — each channel has its own etiquette. Pick yours, click a card to expand, fill the <b style="font-family:var(--font-mono);font-size:.9em;color:var(--accent-text)">{highlighted}</b> bits, and send.</p>
+    </div>
+    <div class="filter-bar" data-reveal>
+      <div class="pills" id="channel-pills" role="group" aria-label="How you connected"></div>
+    </div>
+    <div class="channel-note" id="channel-note"></div>
+    <div class="tmpl-grid" id="tmpl-grid" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="dark" style="text-align:center">
+  <div class="wrap" data-reveal>
+    <span class="eyebrow">The whole system</span>
+    <h2 style="max-width:560px;margin:0 auto 14px">Meet them, mean it, follow up.</h2>
+    <p class="lede" style="max-width:520px;margin:0 auto">Every line here is a starting point, not a script. Say it like yourself, reference something real, and always leave with a way to stay in touch.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 Careers with Em · personal library</div>
+    <div><a href="index.html">Home</a> &nbsp;·&nbsp; <a href="#lines">Lines</a> &nbsp;·&nbsp; <a href="#followup">Follow-ups</a></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+/* ============ DATA ============ */
+
+var SITUATIONS = [
+  {
+    id:'networking', label:'Networking event',
+    note:'Rooms full of name tags. Goal: real conversations, not card-collecting. Lead with curiosity about their work, exit with a channel.',
+    phrases:[
+      {say:'Hi, I don’t think we’ve met yet — I’m Em.', why:'The simple, confident opener. No gimmick needed.'},
+      {say:'I’m still figuring out who’s who here — what brings you to this one?', why:'Opener and question in one; admits the awkwardness everyone feels.'},
+      {say:'That’s really interesting — say more about that?', why:'The universal bridge. People expand when invited.'},
+      {say:'You explained that really well — I’ve never heard it put that way.', why:'Compliment their ideas, not their outfit. It lands deeper.'},
+      {say:'I’ve been thinking about that too, but from a totally different angle…', why:'Connects, then contributes. Keeps it a dialogue, not an interview.'}
+    ],
+    questions:[
+      {say:'What are you working on lately that you’re excited about?', why:'Beats “what do you do” — invites enthusiasm instead of a job title.'},
+      {say:'How did you get into that line of work?', why:'Everyone loves telling their origin story.'},
+      {say:'What’s the most surprising part of your job?', why:'Gets past the rehearsed elevator pitch.'},
+      {say:'Are you from around here originally?', why:'Opens non-work threads when the work talk runs dry.'},
+      {say:'Who else here should I meet?', why:'Great near the end — often gets you a warm intro on the spot.'}
+    ]
+  },
+  {
+    id:'party', label:'Party or hangout',
+    note:'Low stakes, high noise. Goal: warmth over wit. The host is your common thread; use it.',
+    phrases:[
+      {say:'How do you know [the host]?', why:'The universal party opener. There is always an answer.'},
+      {say:'I’m going to grab a drink — want anything?', why:'Instant goodwill, and a built-in reason to come back.'},
+      {say:'I’ve been meaning to talk to you all night — I’m Em.', why:'Flattering and honest. Works especially late in the evening.'},
+      {say:'Okay, I have to know the story behind that.', why:'Point it at anything — a jacket, a tattoo, a story fragment you overheard.'},
+      {say:'You two seem like you’ve known each other forever.', why:'Opens a duo without wedging between them.'}
+    ],
+    questions:[
+      {say:'What’s been the highlight of your month?', why:'A softer “how are you” that actually gets an answer.'},
+      {say:'Working on anything fun outside of work?', why:'Signals you’re not here to network.'},
+      {say:'What’s your favorite thing to do around here?', why:'Everyone has a spot. Instant recommendations, instant plans material.'},
+      {say:'If you weren’t here tonight, what would you be doing?', why:'Playful, and reveals what they actually love.'},
+      {say:'What are you watching or listening to right now?', why:'Lowest-stakes question in existence, endless follow-ups.'}
+    ]
+  },
+  {
+    id:'work', label:'Work & coworkers',
+    note:'Slow-burn relationships. Goal: be the person who noticed. Specific beats smooth here, every time.',
+    phrases:[
+      {say:'I really liked what you said in [meeting] about [topic].', why:'Specific praise for a specific moment. Rare, and remembered.'},
+      {say:'You always seem calm when everything’s on fire — what’s your secret?', why:'Compliment wrapped in a question.'},
+      {say:'I’m trying to meet more people outside my team — I’m Em, I work on [x].', why:'Honest framing makes the approach unweird.'},
+      {say:'Want to grab coffee sometime? I’d love to hear what your team actually does.', why:'The office coffee is the LinkedIn connect of real life.'},
+      {say:'Thanks for jumping in on that earlier — it made a difference.', why:'Gratitude with a timestamp. Builds allies.'}
+    ],
+    questions:[
+      {say:'What does your team actually own? I’ve always been curious.', why:'Flattering — assumes their work is worth understanding.'},
+      {say:'What are you working on this quarter that you’re excited about?', why:'The work version of “what’s new” — gets real answers.'},
+      {say:'How long have you been here? What’s kept you?', why:'Two questions in one; the second is where it gets interesting.'},
+      {say:'What do you wish more people understood about your job?', why:'Everyone has this answer loaded and nobody ever asks.'},
+      {say:'Any lunch spots near the office I’m missing out on?', why:'Easy, useful, and sets up “let’s go together sometime.”'}
+    ]
+  },
+  {
+    id:'oneonone', label:'First 1:1 or coffee chat',
+    note:'You asked for their time (or a friend connected you). Goal: be curious, take notes, leave with a next step.',
+    phrases:[
+      {say:'Thanks for making the time — I’ve been looking forward to this.', why:'Opens warm and signals you take it seriously.'},
+      {say:'[Mutual friend] said you’re the person to talk to about [topic].', why:'Borrowed credibility, plus a compliment.'},
+      {say:'That resonates — I had a similar experience when…', why:'Reciprocity. A 1:1 should not be an interrogation.'},
+      {say:'I’ll be honest, I’m at the “figuring it out” stage, so this is really helpful.', why:'Vulnerability makes people generous.'},
+      {say:'Can I steal that phrase? That’s exactly what I’ve been trying to say.', why:'The best compliment a thinker can get.'}
+    ],
+    questions:[
+      {say:'What’s your story — how did you end up where you are?', why:'The big opener. Then just listen.'},
+      {say:'What’s something you changed your mind about recently?', why:'Signals you want their thinking, not their bio.'},
+      {say:'What would you do differently if you were starting over?', why:'Gets advice without asking “any advice?”'},
+      {say:'What’s the best advice anyone gave you at my stage?', why:'Lets them pass on a gift they received.'},
+      {say:'Who else do you think I should talk to?', why:'The classic closer — one conversation becomes three.'}
+    ]
+  },
+  {
+    id:'group', label:'Group conversations',
+    note:'Joining a circle, holding your own, pulling others in. Goal: add energy without taking over.',
+    phrases:[
+      {say:'Mind if I join? This sounded like the interesting corner.', why:'Permission plus a compliment. Nobody says no.'},
+      {say:'Wait, back up — I want to hear the rest of that story.', why:'Makes the teller feel great and buys you context.'},
+      {say:'[Name], you were saying something about this earlier…', why:'Pull quiet people in. They remember who handed them the mic.'},
+      {say:'I’m with [name] on this one.', why:'Low-effort contribution that builds an instant ally.'},
+      {say:'Okay, hot take incoming…', why:'Flags playfulness so opinions land soft.'}
+    ],
+    questions:[
+      {say:'What did I miss? Catch me up.', why:'The graceful late-joiner move.'},
+      {say:'How do you all know each other?', why:'Maps the room in one question.'},
+      {say:'Okay, settle this for us — [light question]?', why:'Draft a newcomer straight into the fun.'},
+      {say:'Has anyone actually tried that?', why:'Turns abstract chat into stories.'},
+      {say:'What’s everyone’s take?', why:'Opens the floor when one voice is dominating.'}
+    ]
+  },
+  {
+    id:'exit', label:'Exits & wrap-ups',
+    note:'Ending well is a skill. Goal: leave on a high note and never leave without a channel — that’s what the follow-up section below is for.',
+    phrases:[
+      {say:'I’m going to make a lap, but I really enjoyed this.', why:'The clean, guilt-free exit. No excuse needed.'},
+      {say:'I don’t want to keep you — but this was the best conversation I’ve had tonight.', why:'Frames the exit as generosity, ends on a peak.'},
+      {say:'Let’s actually stay in touch — what’s the best way to reach you?', why:'The bridge line. Lets them pick text, Instagram, or LinkedIn.'},
+      {say:'I’m going to grab you on LinkedIn so we don’t lose the thread.', why:'Concrete and immediate — do it on the spot.'},
+      {say:'So good to meet you — I hope [thing they mentioned] goes well.', why:'Proof you listened, delivered at the door.'}
+    ],
+    questions:[
+      {say:'Before I go — what’s the best way to stay in touch?', why:'Open-ended: they choose the channel they actually check.'},
+      {say:'Are you on Instagram, or is texting easier?', why:'A choice between two yeses.'},
+      {say:'Can I send you that [article / name / place] we talked about?', why:'A reason to exchange contacts that’s about them.'},
+      {say:'Will you be at [next event]?', why:'Sets up round two without needing contact info at all.'},
+      {say:'Want to swap numbers so we can actually make that happen?', why:'Use when you’ve floated a plan — strike while it’s warm.'}
+    ]
+  }
+];
+
+var CHANNELS = [
+  {
+    id:'cell', label:'\u{1F4F1} Got their cell',
+    note:'Highest-warmth channel — use it like one. Casual tone, first-name basis, emoji welcome. Text the same day while you’re still fresh in their memory.',
+    templates:[
+      {
+        title:'The same-day text', when:'Within 24 hours',
+        tip:'Reference one specific moment — that’s the whole trick.',
+        body:'Hey {name}, it’s Em from {where we met}! Really glad we got to talk — still thinking about {specific moment or joke}. Let’s make {thing we said we’d do} actually happen \u{1F642}'
+      },
+      {
+        title:'The plan-maker', when:'2–5 days later',
+        tip:'Offer two concrete options — “sometime” plans never happen.',
+        body:'Hey {name}! Following up on {thing we talked about} — are you free {day 1} or {day 2}? I know a good spot near {area} if you’re up for it.'
+      },
+      {
+        title:'The revive', when:'Weeks or months later',
+        tip:'A real trigger beats “just checking in” every time.',
+        body:'{name}! You crossed my mind because {trigger — saw a place / heard a song / read a thing}. How’s {thing they had going on} going?'
+      }
+    ]
+  },
+  {
+    id:'instagram', label:'\u{1F4F8} Got their Instagram',
+    note:'Casual-social channel. Follow first, DM within a day or two. Their stories and posts are ready-made conversation starters — use them.',
+    templates:[
+      {
+        title:'The follow + first DM', when:'Within 48 hours',
+        tip:'Acknowledge the channel switch — it reads charming, not awkward.',
+        body:'Hey! It’s Em — we met at {where we met}. Loved chatting about {topic}. Figured Instagram beats hoping we run into each other again \u{1F642}'
+      },
+      {
+        title:'The story reply', when:'Anytime after connecting',
+        tip:'Lowest-pressure re-engagement that exists. One line is plenty.',
+        body:'Okay this looks amazing — is this {place or thing in their story}? Also glad to see {thing they mentioned} is going well!'
+      },
+      {
+        title:'The DM plan-maker', when:'When a plan was floated',
+        tip:'“Random but” resets the clock on an old thread.',
+        body:'Random but — remember {thing we talked about doing}? Still up for it? I’m free {timeframe} if you want to make it real.'
+      }
+    ]
+  },
+  {
+    id:'linkedin', label:'\u{1F4BC} Got their LinkedIn',
+    note:'Professional channel with rules of its own: invite notes cap at 300 characters, so save the substance for after they accept. Slightly more polish, still human.',
+    templates:[
+      {
+        title:'The connection note', when:'Same day — 300 char max',
+        tip:'Short, specific, zero ask. The goal is just the accept.',
+        body:'Hi {name} — great meeting you at {event}. I really enjoyed our conversation about {topic}. Would love to stay connected!'
+      },
+      {
+        title:'The after-accept message', when:'1–2 days after they accept',
+        tip:'Now you can make the ask — one ask, easy to say yes to.',
+        body:'Thanks for connecting, {name}! I keep thinking about what you said about {topic}. If you’re open to it, I’d love to continue the conversation over coffee or a quick call sometime.'
+      },
+      {
+        title:'The value-add follow-up', when:'Whenever you find something for them',
+        tip:'Give before you ask again. This is how weak ties become strong ones.',
+        body:'Hi {name} — saw this and immediately thought of our conversation about {topic}: {link}. Hope {thing they mentioned} is going well!'
+      }
+    ]
+  }
+];
+
+/* ============ STATE ============ */
+
+var state = {situation:'networking', mode:'phrases', channel:'cell'};
+try{
+  var saved = JSON.parse(localStorage.getItem('socialLibrary') || '{}');
+  if(SITUATIONS.some(function(s){return s.id===saved.situation})) state.situation = saved.situation;
+  if(saved.mode==='phrases'||saved.mode==='questions') state.mode = saved.mode;
+  if(CHANNELS.some(function(c){return c.id===saved.channel})) state.channel = saved.channel;
+}catch(e){}
+function persist(){ try{ localStorage.setItem('socialLibrary', JSON.stringify(state)); }catch(e){} }
+
+/* ============ HELPERS ============ */
+
+function el(tag, cls, text){
+  var n = document.createElement(tag);
+  if(cls) n.className = cls;
+  if(text != null) n.textContent = text;
+  return n;
+}
+function bindCopy(btn, getText){
+  btn.addEventListener('click', function(ev){
+    ev.stopPropagation();
+    var text = getText();
+    function done(){
+      btn.classList.add('copied');
+      btn.textContent = 'Copied ✓';
+      setTimeout(function(){ btn.classList.remove('copied'); btn.textContent = 'Copy'; }, 1600);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(e){}
+      document.body.removeChild(ta);
+    }
+  });
+}
+/* Wrap {merge fields} in <b> for display */
+function highlightFields(container, text){
+  text.split(/(\{[^}]+\})/g).forEach(function(part){
+    if(/^\{[^}]+\}$/.test(part)){ container.appendChild(el('b', null, part)); }
+    else { container.appendChild(document.createTextNode(part)); }
+  });
+}
+
+/* ============ RENDER: lines ============ */
+
+var situationPills = document.getElementById('situation-pills');
+var modeToggle = document.getElementById('mode-toggle');
+var situationNote = document.getElementById('situation-note');
+var linesList = document.getElementById('lines-list');
+
+SITUATIONS.forEach(function(s){
+  var b = el('button', null, s.label);
+  b.type = 'button';
+  b.dataset.id = s.id;
+  b.addEventListener('click', function(){ state.situation = s.id; persist(); renderLines(); });
+  situationPills.appendChild(b);
+});
+modeToggle.querySelectorAll('button').forEach(function(b){
+  b.addEventListener('click', function(){ state.mode = b.dataset.mode; persist(); renderLines(); });
+});
+
+function renderLines(){
+  situationPills.querySelectorAll('button').forEach(function(b){
+    b.setAttribute('aria-pressed', String(b.dataset.id === state.situation));
+  });
+  modeToggle.querySelectorAll('button').forEach(function(b){
+    b.setAttribute('aria-pressed', String(b.dataset.mode === state.mode));
+  });
+  var s = SITUATIONS.filter(function(x){return x.id === state.situation})[0];
+  situationNote.textContent = s.note;
+  linesList.textContent = '';
+  s[state.mode].forEach(function(item){
+    var row = el('div', 'line');
+    var txt = el('div', 'txt');
+    txt.appendChild(el('div', 'say', '“' + item.say + '”'));
+    txt.appendChild(el('div', 'why', item.why));
+    var btn = el('button', 'copy', 'Copy');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Copy line');
+    bindCopy(btn, function(){ return item.say; });
+    row.appendChild(txt);
+    row.appendChild(btn);
+    linesList.appendChild(row);
+  });
+}
+
+/* ============ RENDER: follow-up templates ============ */
+
+var channelPills = document.getElementById('channel-pills');
+var channelNote = document.getElementById('channel-note');
+var tmplGrid = document.getElementById('tmpl-grid');
+
+CHANNELS.forEach(function(c){
+  var b = el('button', null, c.label);
+  b.type = 'button';
+  b.dataset.id = c.id;
+  b.addEventListener('click', function(){ state.channel = c.id; persist(); renderTemplates(); });
+  channelPills.appendChild(b);
+});
+
+function renderTemplates(){
+  channelPills.querySelectorAll('button').forEach(function(b){
+    b.setAttribute('aria-pressed', String(b.dataset.id === state.channel));
+  });
+  var c = CHANNELS.filter(function(x){return x.id === state.channel})[0];
+  channelNote.textContent = c.note;
+  tmplGrid.textContent = '';
+  c.templates.forEach(function(t, idx){
+    var card = el('article', 'tmpl');
+    var head = el('button', 'head');
+    head.type = 'button';
+    head.setAttribute('aria-expanded', 'false');
+    var h3 = el('h3', null, t.title);
+    h3.appendChild(el('span', 'caret', '+'));
+    head.appendChild(h3);
+    head.appendChild(el('span', 'when', t.when));
+    var preview = el('p', 'preview', t.body.replace(/\{([^}]+)\}/g, '…').slice(0, 90) + '… (click to expand)');
+    head.appendChild(preview);
+    head.addEventListener('click', function(){
+      var open = card.hasAttribute('data-open');
+      if(open){ card.removeAttribute('data-open'); } else { card.setAttribute('data-open',''); }
+      head.setAttribute('aria-expanded', String(!open));
+    });
+    var full = el('div', 'full');
+    var body = el('div', 'body-text');
+    highlightFields(body, t.body);
+    var foot = el('div', 'foot');
+    foot.appendChild(el('span', 'tip', '\u{1F4A1} ' + t.tip));
+    var btn = el('button', 'copy', 'Copy');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Copy template');
+    bindCopy(btn, function(){ return t.body; });
+    foot.appendChild(btn);
+    full.appendChild(body);
+    full.appendChild(foot);
+    card.appendChild(head);
+    card.appendChild(full);
+    if(idx === 0) card.setAttribute('data-open','');
+    tmplGrid.appendChild(card);
+  });
+  var first = tmplGrid.querySelector('.tmpl .head');
+  if(first) first.setAttribute('aria-expanded', 'true');
+}
+
+/* ============ STATS ============ */
+
+var lineCount = SITUATIONS.reduce(function(n, s){ return n + s.phrases.length + s.questions.length; }, 0);
+var tmplCount = CHANNELS.reduce(function(n, c){ return n + c.templates.length; }, 0);
+document.getElementById('stat-lines').textContent = lineCount;
+document.getElementById('stat-templates').textContent = tmplCount;
+
+renderLines();
+renderTemplates();
+})();
+</script>
+
+</body>
+</html>
