@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Single local user for the MVP; every top-level entity carries userId so
+// multi-tenant later is a data migration, not a schema rewrite.
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  resumes         Resume[]
+  ijps            IdealJobProfile[]
+  ijpSuggestions  IjpSuggestion[]
+  buckets         Bucket[]
+  jobPosts        JobPost[]
+  applications    Application[]
+  touchpoints     Touchpoint[]
+  callNotes       CallNote[]
+}
+
+model Resume {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  label     String // e.g. "v1 — PM generalist"
+  content   String // full plain text, line-addressable for edit recommendations
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications    Application[]
+  recommendations ResumeRecommendation[]
+  callNotes       CallNote[]
+}
+
+// The Ideal Job Profile — seeker-side mirror of Metaview's ICP.
+// List-like fields are JSON-encoded strings (SQLite has no arrays).
+model IdealJobProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique // one active IJP per user in the MVP
+  user                  User     @relation(fields: [userId], references: [id])
+  version               Int      @default(1) // bumped on every edit; JobScores stamp it
+  targetRoles           String   @default("[]") // JSON string[]
+  industries            String   @default("[]") // JSON string[]
+  seniority             String   @default("")
+  locations             String   @default("[]") // JSON string[]
+  remotePreference      String   @default("flexible") // remote | hybrid | onsite | flexible
+  compensationFloor     Int?
+  compensationCurrency  String   @default("USD")
+  companySizePreference String   @default("[]") // JSON string[] e.g. ["startup (<50)", "scaleup (50-500)"]
+  dealbreakers          String   @default("[]") // JSON string[]
+  skills                String   @default("[]") // JSON {name, priority: "must"|"nice"}[]
+  notes                 String   @default("")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// Agent-proposed IJP changes awaiting user confirmation (Metaview ICP-suggestion pattern).
+model IjpSuggestion {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  field          String // IJP field name the suggestion targets
+  currentValue   String // JSON snapshot of the field at suggestion time
+  suggestedValue String // JSON proposed value
+  rationale      String // why the agent suggests it, grounded in feedback
+  sourceFeedback String    @default("[]") // JSON JobFeedback ids that motivated it
+  status         String    @default("pending") // pending | accepted | rejected
+  createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+}
+
+// User-defined grouping of similar roles.
+model Bucket {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  jobPosts        JobPost[]
+  recommendations ResumeRecommendation[]
+
+  @@unique([userId, name])
+}
+
+model JobPost {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  source       String    @default("seed") // seed | manual | url
+  url          String?
+  title        String
+  company      String
+  location     String    @default("")
+  remote       String    @default("onsite") // remote | hybrid | onsite
+  seniority    String    @default("")
+  compMin      Int?
+  compMax      Int?
+  compCurrency String    @default("USD")
+  companySize  String? // e.g. "startup (<50)"
+  industry     String?
+  skills       String    @default("[]") // JSON string[] extracted from the description
+  description  String
+  postedAt     DateTime?
+  bucketId     String?
+  bucket       Bucket?   @relation(fields: [bucketId], references: [id])
+  archived     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  scores       JobScore[]
+  feedback     JobFeedback[]
+  applications Application[]
+  callNotes    CallNote[]
+}
+
+// A ranking of one job against one IJP version. Latest per (job, ijpVersion) wins.
+model JobScore {
+  id             String   @id @default(cuid())
+  jobPostId      String
+  jobPost        JobPost  @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
+  ijpVersion     Int
+  overall        String // great | good | okay | poor
+  justification  String // short prose, shown on hover (Metaview ranked-review pattern)
+  skillsFit      String // strong | partial | weak
+  skillsNote     String   @default("")
+  seniorityFit   String
+  seniorityNote  String   @default("")
+  compFit        String
+  compNote       String   @default("")
+  locationFit    String
+  locationNote   String   @default("")
+  skillBreakdown String   @default("[]") // JSON {skill, level, note}[] per-IJP-skill columns
+  engine         String   @default("heuristic") // llm | heuristic
+  createdAt      DateTime @default(now())
+
+  @@unique([jobPostId, ijpVersion])
+}
+
+// Yes/maybe/no + one-line reason. Feeds the IJP suggestion loop.
+model JobFeedback {
+  id         String    @id @default(cuid())
+  jobPostId  String
+  jobPost    JobPost   @relation(fields: [jobPostId], references: [id], onDelete: Cascade)
+  verdict    String // yes | maybe | no
+  reason     String    @default("")
+  createdAt  DateTime  @default(now())
+  consumedAt DateTime? // set when folded into an IjpSuggestion run
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  jobPostId String
+  jobPost   JobPost  @relation(fields: [jobPostId], references: [id])
+  resumeId  String
+  resume    Resume   @relation(fields: [resumeId], references: [id])
+  appliedAt DateTime @default(now())
+  stage     String   @default("applied") // applied | screen | interview | offer | rejected | ghosted
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stageEvents StageEvent[]
+  touchpoints Touchpoint[]
+  callNotes   CallNote[]
+}
+
+// Full stage history — the funnel dashboard needs transitions, not just current state.
+model StageEvent {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  stage         String
+  occurredAt    DateTime    @default(now())
+}
+
+// Networking touchpoints, optionally tied to an application.
+model Touchpoint {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  contactName   String
+  company       String       @default("")
+  channel       String       @default("call") // call | coffee | email | linkedin | event
+  occurredAt    DateTime     @default(now())
+  notes         String       @default("")
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id])
+}
+
+// Line-level resume edit recommendation for a bucket (review-queue pattern:
+// the stored resume changes only when a recommendation is accepted).
+model ResumeRecommendation {
+  id            String    @id @default(cuid())
+  bucketId      String
+  bucket        Bucket    @relation(fields: [bucketId], references: [id])
+  resumeId      String
+  resume        Resume    @relation(fields: [resumeId], references: [id])
+  runId         String // groups recommendations produced by one analysis run
+  type          String // replace | add | remove
+  lineNumber    Int? // 1-based line in the resume at generation time
+  currentText   String    @default("")
+  suggestedText String    @default("")
+  reason        String
+  status        String    @default("pending") // pending | accepted | rejected
+  createdAt     DateTime  @default(now())
+  resolvedAt    DateTime?
+}
+
+// One uploaded call (interview or networking) and its structured summary.
+model CallNote {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  title         String
+  template      String // recruiter_screen | hiring_manager | networking
+  transcript    String // numbered-line source of truth for citations
+  jobPostId     String? // optional additional source: job description
+  jobPost       JobPost?     @relation(fields: [jobPostId], references: [id])
+  resumeId      String? // optional additional source: resume
+  resume        Resume?      @relation(fields: [resumeId], references: [id])
+  applicationId String?
+  application   Application? @relation(fields: [applicationId], references: [id])
+  summary       String? // JSON: {sections: [{title, points: [{text, citations: number[], origin}]}], notCovered?}
+  engine        String       @default("heuristic")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
