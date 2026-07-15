@@ -11,3 +11,11 @@ Three pages of plain HTML/CSS/JS, no build step:
 The visual system (colors, type, spacing, motion) is documented in `TOKENS.md`. Fonts are self-hosted in `fonts/`. Deploys to GitHub Pages automatically on push to `main` via `.github/workflows/pages.yml`.
 
 To preview locally: `python3 -m http.server` from the repo root.
+
+## Seeker
+
+[`seeker/`](./seeker) contains **Seeker**, a Next.js web app for job seekers
+that mirrors Metaview's recruiter agents from the candidate's side (ideal job
+profile, job ranking with feedback loops, application tracker + dashboards,
+resume alignment, call notetaker). Setup and the full feature map are in
+[`seeker/README.md`](./seeker/README.md).
