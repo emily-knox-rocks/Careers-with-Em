@@ -30,7 +30,10 @@ export function TouchpointForm() {
           contactName,
           company,
           channel,
-          occurredAt: new Date(occurredAt + "T12:00:00Z").toISOString(),
+          // cleared date field -> let the server default to now
+          occurredAt: occurredAt
+            ? new Date(occurredAt + "T12:00:00Z").toISOString()
+            : undefined,
           notes,
         }),
       });

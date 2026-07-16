@@ -34,7 +34,10 @@ export function NewApplicationForm({
         body: JSON.stringify({
           jobPostId,
           resumeId,
-          appliedAt: new Date(appliedAt + "T12:00:00Z").toISOString(),
+          // cleared date field -> let the server default to now
+          appliedAt: appliedAt
+            ? new Date(appliedAt + "T12:00:00Z").toISOString()
+            : undefined,
           notes,
         }),
       });

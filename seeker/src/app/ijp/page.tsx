@@ -69,7 +69,14 @@ export default async function IjpPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
-        <IjpEditor initial={ijpRowToData(ijp)} version={ijp.version} />
+        {/* keyed by version: accepting a suggestion bumps the version and
+            must remount the editor, or its state would show (and re-save)
+            pre-accept values */}
+        <IjpEditor
+          key={ijp.version}
+          initial={ijpRowToData(ijp)}
+          version={ijp.version}
+        />
         <div>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
             Agent suggestions{" "}
