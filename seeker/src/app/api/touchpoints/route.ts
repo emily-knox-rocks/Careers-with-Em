@@ -23,6 +23,17 @@ export async function POST(request: Request) {
   }
   const user = await getLocalUser();
   const { occurredAt, applicationId, ...rest } = parsed.data;
+  if (applicationId) {
+    const app = await prisma.application.findUnique({
+      where: { id: applicationId },
+    });
+    if (!app || app.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 },
+      );
+    }
+  }
   const touchpoint = await prisma.touchpoint.create({
     data: {
       userId: user.id,

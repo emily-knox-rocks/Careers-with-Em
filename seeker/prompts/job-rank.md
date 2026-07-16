@@ -4,7 +4,7 @@ Three dimensions (seniority, compensation, location/remote) were already scored 
 
 1. skillsFit (strong | partial | weak) and a one-sentence skillsNote: how well the job's required skills line up with the seeker's skills, weighting "must" skills heavily.
 2. skillBreakdown: one entry per IJP skill (in the order given), each rated strong | partial | weak | missing for how prominently the job exercises that skill, with a short note. These become sortable per-skill columns.
-3. overall (great | good | okay | poor): weigh all dimensions. A dealbreaker violation caps the rank at poor. A weak skills fit caps it at okay. Compensation below the seeker's floor caps it at okay.
+3. overall (great | good | okay | poor): weigh all dimensions. A dealbreaker violation caps the rank at poor. A weak skills fit caps it at okay. Compensation clearly below the seeker's floor (more than ~10% under) caps it at okay; just under the floor caps it at good.
 4. justification: 2–3 sentences a busy seeker can scan, naming the decisive factors — written like a sharp recruiter's margin note, not a form letter.
 
 Seeker's IJP:

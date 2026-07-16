@@ -27,13 +27,17 @@ export default async function DashboardsPage() {
     }),
   ]);
 
-  const funnelSet = new Set<string>(FUNNEL_STAGES);
   const apps: AppDatum[] = applications.map((a) => {
-    const reached = new Set<string>(["applied"]);
+    // Reaching a stage implies reaching every earlier one — the tracker lets
+    // you jump applied -> offer directly, and the funnel must stay monotonic.
+    const stageIdx = (s: string) =>
+      FUNNEL_STAGES.indexOf(s as (typeof FUNNEL_STAGES)[number]);
+    let maxIdx = 0;
     for (const ev of a.stageEvents) {
-      if (funnelSet.has(ev.stage)) reached.add(ev.stage);
+      maxIdx = Math.max(maxIdx, stageIdx(ev.stage));
     }
-    if (funnelSet.has(a.stage)) reached.add(a.stage);
+    maxIdx = Math.max(maxIdx, stageIdx(a.stage));
+    const reached = new Set<string>(FUNNEL_STAGES.slice(0, maxIdx + 1));
     return {
       id: a.id,
       bucketName: a.jobPost.bucket?.name ?? null,

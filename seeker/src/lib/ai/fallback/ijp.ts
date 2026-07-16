@@ -1,5 +1,6 @@
 import type { IjpData } from "../schemas";
 import type { IjpIntake } from "../ijp";
+import { parseCompValue } from "@/lib/parseComp";
 
 // Deterministic IJP draft used when no ANTHROPIC_API_KEY is configured.
 // Structured intake answers map straight onto fields; skills/industries are
@@ -92,8 +93,8 @@ export function heuristicIjpDraft(resume: string, intake: IjpIntake): IjpData {
     .map(titleCase);
 
   const compFloor = intake.compensationFloor
-    ? parseInt(intake.compensationFloor.replace(/[^0-9]/g, ""), 10)
-    : NaN;
+    ? parseCompValue(intake.compensationFloor)
+    : null;
 
   return {
     targetRoles: splitList(intake.targetRoles).map(titleCase),
@@ -104,7 +105,7 @@ export function heuristicIjpDraft(resume: string, intake: IjpIntake): IjpData {
     seniority: intake.seniority.trim(),
     locations: splitLocations(intake.locations).map(titleCase),
     remotePreference: intake.remotePreference,
-    compensationFloor: Number.isFinite(compFloor) ? compFloor : null,
+    compensationFloor: compFloor,
     compensationCurrency: "USD",
     companySizePreference: intake.companySizePreference,
     dealbreakers: splitList(intake.dealbreakers),

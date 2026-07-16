@@ -86,6 +86,9 @@ export async function generateIjpSuggestions(userId: string): Promise<{
     string,
     unknown
   >;
+  // Feedback is only marked consumed when it actually produced suggestions —
+  // otherwise a lone "no" would be burned before a second one arrives to
+  // corroborate the trend.
   await prisma.$transaction([
     ...fresh.map((s) =>
       prisma.ijpSuggestion.create({
@@ -99,11 +102,17 @@ export async function generateIjpSuggestions(userId: string): Promise<{
         },
       }),
     ),
-    prisma.jobFeedback.updateMany({
-      where: { id: { in: feedback.map((f) => f.id) } },
-      data: { consumedAt: new Date() },
-    }),
+    ...(fresh.length > 0
+      ? [
+          prisma.jobFeedback.updateMany({
+            where: { id: { in: feedback.map((f) => f.id) } },
+            data: { consumedAt: new Date() },
+          }),
+        ]
+      : []),
   ]);
 
+  // consumed = items analyzed this run (they stay unconsumed in the DB when
+  // no suggestions came out, so their trend signal survives for next time)
   return { created: fresh.length, engine, consumed: feedback.length };
 }

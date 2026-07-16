@@ -27,13 +27,15 @@ export type DeterministicDims = {
   dealbreakers: string[]; // violated dealbreaker phrases
 };
 
+// Checked highest level first with word boundaries, so "Senior Director"
+// reads as Director and "International" doesn't read as intern.
 const LEVELS: [RegExp, number][] = [
-  [/intern|entry|junior|associate/i, 1],
+  [/\bvp\b|vice president|\bchief\b|c-level|cxo/i, 6],
+  [/\bdirector\b|head of/i, 5],
+  [/\bstaff\b|\bprincipal\b|\blead\b(?!\s+gen)/i, 4],
+  [/\bsenior\b|\bsr\.?\b/i, 3],
   [/\bmid\b|mid-level|intermediate/i, 2],
-  [/senior|sr\.?\b/i, 3],
-  [/staff|principal|lead\b/i, 4],
-  [/director|head of/i, 5],
-  [/\bvp\b|vice president|chief|c-level|cxo/i, 6],
+  [/\bintern(ship)?\b|\bentry\b|\bjunior\b|\bassociate\b/i, 1],
 ];
 
 function seniorityLevel(text: string): number | null {
@@ -122,7 +124,7 @@ function scoreLocation(ijp: IjpData, job: JobLike): DimScore {
         return { fit: "partial", note: `On-site in ${job.location} — you prefer hybrid.` };
       return { fit: "weak", note: `${jobRemote} in ${job.location} doesn't fit your hybrid preference.` };
     case "onsite":
-      if (jobRemote !== "remote" && inCity)
+      if (jobRemote !== "remote" && (inCity || noCityPref))
         return { fit: "strong", note: `In-office in ${job.location}, matching your preference.` };
       if (jobRemote === "remote")
         return { fit: "partial", note: "Fully remote — you prefer being on-site." };
@@ -165,11 +167,21 @@ function violatedDealbreakers(ijp: IjpData, job: JobLike): string[] {
       .map((t) => t.replace(/[^a-z0-9%]/g, ""))
       .filter(
         (t) =>
-          (t.length >= 5 || /[\d%]/.test(t)) && !DEALBREAKER_STOPWORDS.has(t),
+          // digit tokens must still be substantial ("100%", not "7")
+          (t.length >= 5 || (/[\d%]/.test(t) && t.length >= 3)) &&
+          !DEALBREAKER_STOPWORDS.has(t),
       );
-    // Require EVERY distinctive token so "no 100% travel" doesn't fire on a
-    // posting that merely mentions occasional travel.
-    if (tokens.length > 0 && tokens.every((t) => text.includes(t))) {
+    // Require EVERY distinctive token, each on a word boundary, so "no 100%
+    // travel" doesn't fire on occasional travel and "person" doesn't fire on
+    // "personal".
+    const tokenHits = (t: string) => {
+      const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // \b only works next to word characters — "100%" ends with one that isn't
+      const lead = /^[a-z0-9]/.test(t) ? "\\b" : "";
+      const trail = /[a-z0-9]$/.test(t) ? "\\b" : "";
+      return new RegExp(`${lead}${escaped}${trail}`).test(text);
+    };
+    if (tokens.length > 0 && tokens.every(tokenHits)) {
       violated.push(db);
     }
   }

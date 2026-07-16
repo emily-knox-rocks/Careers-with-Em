@@ -55,8 +55,14 @@ export async function POST(request: Request) {
   );
 
   const runId = randomUUID();
-  await prisma.$transaction(
-    recommendations.map((rec) =>
+  // A new run supersedes the previous pending queue for this pair —
+  // otherwise re-running stacks duplicate recommendations (and duplicate
+  // "append" edits would apply twice).
+  await prisma.$transaction([
+    prisma.resumeRecommendation.deleteMany({
+      where: { bucketId, resumeId, status: "pending" },
+    }),
+    ...recommendations.map((rec) =>
       prisma.resumeRecommendation.create({
         data: {
           bucketId,
@@ -70,7 +76,7 @@ export async function POST(request: Request) {
         },
       }),
     ),
-  );
+  ]);
 
   return NextResponse.json({
     runId,

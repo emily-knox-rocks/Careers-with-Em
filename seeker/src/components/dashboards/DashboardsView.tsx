@@ -33,10 +33,12 @@ function pct(n: number, d: number): number {
   return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
+// All-UTC so a week key never straddles the viewer's timezone — mixing local
+// getDay with UTC toISOString made touchpoints vanish from the chart.
 function weekStart(iso: string): string {
   const d = new Date(iso);
-  const day = (d.getDay() + 6) % 7; // Monday = 0
-  d.setDate(d.getDate() - day);
+  const day = (d.getUTCDay() + 6) % 7; // Monday = 0
+  d.setUTCDate(d.getUTCDate() - day);
   return d.toISOString().slice(0, 10);
 }
 
@@ -202,10 +204,11 @@ export function DashboardsView({
     const interviewed = filteredApps.filter((a) =>
       a.reached.includes("interview"),
     );
+    // rows are mutually exclusive so they sum to the stated total
     const rows = [
       ["offer", interviewed.filter((a) => a.reached.includes("offer")).length],
       ["rejected", interviewed.filter((a) => !a.reached.includes("offer") && a.stage === "rejected").length],
-      ["ghosted", interviewed.filter((a) => a.stage === "ghosted").length],
+      ["ghosted", interviewed.filter((a) => !a.reached.includes("offer") && a.stage === "ghosted").length],
       ["in process", interviewed.filter((a) => !a.reached.includes("offer") && !["rejected", "ghosted"].includes(a.stage)).length],
     ] as const;
     return {

@@ -9,3 +9,5 @@ One lesson per entry. Checked at the start of each milestone.
 - **Subagents normalize enum labels unless told the exact strings are load-bearing.** The seed validator "fixed" companySize values into a different format; always re-verify enum fields after delegated data generation.
 - **React splits interpolated JSX text with HTML comments** (`52<!-- --> jobs`), so curl+grep checks against rendered pages need loose patterns.
 - **Emily's working style (from the brief): act on enough information, record choices in DECISIONS.md, avoid over-engineering, verify every milestone end to end and only report evidence-backed progress.**
+- **The remote container can be recycled between sessions, wiping gitignored files (dev.db) while tracked files survive.** Recovery is exactly the README setup path (migrate deploy + db:seed) — which also proved the fresh-install instructions work.
+- **An empty "confirmed findings" list from a review pipeline can mean "verification never ran", not "clean".** The verify stage hit a usage limit; always check the failure list before trusting an empty result.

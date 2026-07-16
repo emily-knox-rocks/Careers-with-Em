@@ -59,22 +59,20 @@ function locateLine(
   lineNumber: number | null,
 ): number {
   if (!currentText) return -1;
-  let idx = lines.findIndex((l) => l === currentText);
-  if (idx === -1) {
-    idx = lines.findIndex((l) => l.trim() === currentText.trim());
+  // The lineNumber hint wins when the line there still matches — resumes
+  // routinely contain duplicate lines, and first-match would edit the wrong
+  // occurrence.
+  if (lineNumber != null && lineNumber >= 1 && lineNumber <= lines.length) {
+    const atHint = lines[lineNumber - 1];
+    if (atHint === currentText || atHint.trim() === currentText.trim()) {
+      return lineNumber - 1;
+    }
   }
-  if (
-    idx === -1 &&
-    lineNumber != null &&
-    lineNumber >= 1 &&
-    lineNumber <= lines.length &&
-    lines[lineNumber - 1].trim().length > 0 &&
-    (lines[lineNumber - 1].includes(currentText.trim().slice(0, 24)) ||
-      currentText.trim().includes(lines[lineNumber - 1].trim().slice(0, 24)))
-  ) {
-    idx = lineNumber - 1;
-  }
-  return idx;
+  const idx = lines.findIndex((l) => l === currentText);
+  if (idx !== -1) return idx;
+  // No fuzzy fallback: a near-match means the line was already edited, and
+  // silently overwriting it would discard that edit — a clean 409 is safer.
+  return lines.findIndex((l) => l.trim() === currentText.trim());
 }
 
 /**

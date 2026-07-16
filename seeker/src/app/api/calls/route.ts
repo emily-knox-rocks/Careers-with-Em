@@ -37,6 +37,17 @@ export async function POST(request: Request) {
   if (resumeId && (!resume || resume.userId !== user.id)) {
     return NextResponse.json({ error: "Resume not found" }, { status: 404 });
   }
+  if (applicationId) {
+    const app = await prisma.application.findUnique({
+      where: { id: applicationId },
+    });
+    if (!app || app.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Application not found" },
+        { status: 404 },
+      );
+    }
+  }
 
   const { summary, engine } = await summarizeCall(transcript, template, {
     jobTitle: job?.title ?? null,

@@ -79,6 +79,7 @@ export function heuristicSuggestions(
   for (const f of yes) {
     for (const s of f.job.skills) {
       const key = s.trim().toLowerCase();
+      if (!key || key === "(none detected)") continue;
       skillCounts.set(key, (skillCounts.get(key) ?? 0) + 1);
     }
   }

@@ -1,6 +1,7 @@
 import type { IdealJobProfile } from "@prisma/client";
 import { runPrompt, withFallback } from "@/lib/llm";
 import { parseJson, toJson } from "@/lib/jsonField";
+import { parseCompValue } from "@/lib/parseComp";
 import {
   IjpDataSchema,
   type IjpData,
@@ -108,7 +109,10 @@ export function applySuggestionToIjp(
       | "locations"
       | "companySizePreference"
       | "dealbreakers";
-    if (s.action === "add" && !next[key].some((v) => eq(v, s.value))) {
+    // "set" on a list field (the LLM occasionally emits it despite the
+    // prompt) is treated as "add" — silently no-oping would mark the
+    // suggestion accepted without changing anything.
+    if (s.action !== "remove" && !next[key].some((v) => eq(v, s.value))) {
       next[key] = [...next[key], s.value];
     } else if (s.action === "remove") {
       next[key] = next[key].filter((v) => !eq(v, s.value));
@@ -118,7 +122,7 @@ export function applySuggestionToIjp(
 
   switch (s.field) {
     case "skills":
-      if (s.action === "add" && !next.skills.some((k) => eq(k.name, s.value))) {
+      if (s.action !== "remove" && !next.skills.some((k) => eq(k.name, s.value))) {
         next.skills = [
           ...next.skills,
           { name: s.value, priority: s.skillPriority ?? "nice" },
@@ -138,8 +142,12 @@ export function applySuggestionToIjp(
       break;
     }
     case "compensationFloor": {
-      const n = parseInt(s.value.replace(/[^0-9]/g, ""), 10);
-      next.compensationFloor = Number.isFinite(n) ? n : next.compensationFloor;
+      if (s.action === "remove") {
+        next.compensationFloor = null;
+        break;
+      }
+      const n = parseCompValue(s.value);
+      next.compensationFloor = n ?? next.compensationFloor;
       break;
     }
     case "notes":
