@@ -21,6 +21,7 @@ const MAX_CHARS = 24000;
 
 function stripHtml(html: string): string {
   return html
+    .replace(/<head[\s\S]*?<\/head>/gi, " ") // <title>/meta must not become line 1
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<nav[\s\S]*?<\/nav>/gi, " ")

@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "test": "tsx --test tests/*.test.ts",
+    "db:demo": "tsx prisma/demo.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

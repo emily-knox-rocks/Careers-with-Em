@@ -24,6 +24,11 @@ npm run db:seed               # loads 52 seed job posts across 4 buckets
 npm run dev                   # http://localhost:3000
 ```
 
+Optional: `npm run db:demo` fills the tracker with sample applications and
+touchpoints (marked `notes="demo data"`) so the dashboards have something to
+show before you've logged real activity. `npm test` runs the unit tests for
+the ranking rubric, edit application, and ingestion heuristics.
+
 Without an `ANTHROPIC_API_KEY`, every LLM feature falls back to a
 deterministic heuristic and the UI shows a banner — the whole app stays
 usable, just less smart. Optional env vars: `SEEKER_MODEL` (defaults to
